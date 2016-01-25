@@ -61,7 +61,7 @@ PKG_MD5SUM:=6b6076ec9e93f05dd63e47eb9c15728b
 PKG_INSTALL:=1
 
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DIR:=$(BUILD_DIR)/python-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
 
@@ -79,14 +79,22 @@ define Package/plugin-gargoyle-python/description
 	python support for Gargoyle plugins
 endef
 
-define Build/Prepare
-endef
 
-define Build/Configure
-endef
+CONFIGURE_ARGS += \
+	--with-libevent-dir="$(STAGING_DIR)/usr" \
+	--with-ssl-dir="$(STAGING_DIR)/usr" \
+	--disable-threads \
+	--disable-gcc-hardening \
+	--disable-asciidoc
 
-define Build/Compile
-endef
+CONFIGURE_VARS += \
+	CROSS_COMPILE="yes"
+
+# pass CFLAGS again to override -O2 set by configure
+MAKE_FLAGS += \
+	CFLAGS="$(TARGET_CFLAGS) -fPIC -std=gnu99"
+
+
 
 define Package/plugin-gargoyle-python/install
 	$(INSTALL_DIR) $(1)

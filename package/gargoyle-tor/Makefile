@@ -141,10 +141,10 @@ define Package/gargoyle-tor/Default
 endef
 
 define Package/gargoyle-tor/Default/description
- The Gargoyle Tor Package contains the Tor binary along with a uci 
+ The Gargoyle Tor Package contains the Tor binary along with a uci
  config file and init script compatible with the Gargoyle Web Interface
- for OpenWRT. Another package, the plugin-gargoyle-tor package, is 
- necessary to configure Tor in the web interface, and has this package 
+ for OpenWRT. Another package, the plugin-gargoyle-tor package, is
+ necessary to configure Tor in the web interface, and has this package
  as a dependency.
 
  Tor is a toolset for a wide range of organizations and people that want to
@@ -157,7 +157,7 @@ endef
 define Package/gargoyle-tor
 $(call Package/gargoyle-tor/Default)
   TITLE:=An anonymous Internet communication system
-  DEPENDS:=+obfsproxy +libevent2 +libopenssl +libpthread +librt +ipset +kmod-ipt-ipset +gargoyle-firewall-util 
+  DEPENDS:=+plugin-gargoyle-obfsproxy +libevent2 +libopenssl +libpthread +librt +ipset +kmod-ipt-ipset +gargoyle-firewall-util
 endef
 
 define Package/gargoyle-tor-geoip
@@ -202,12 +202,12 @@ define Package/gargoyle-tor/install
 	$(INSTALL_CONF) ./files/oniondns.pat                     $(1)/etc/l7-protocols/oniondns.pat
 endef
 define Package/gargoyle-tor/postinst
-	if [ -z "$${IPKG_INSTROOT}" ] ; then 
+	if [ -z "$${IPKG_INSTROOT}" ] ; then
 		sh /etc/uci-defaults/tor.ucidefaults
 	fi
 endef
 define Package/gargoyle-tor/postrm
-	if [ -z "$${IPKG_INSTROOT}" ] ; then 
+	if [ -z "$${IPKG_INSTROOT}" ] ; then
 		uci del firewall.tor_include_file
 		uci commit
 	fi
