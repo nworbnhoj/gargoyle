@@ -9,7 +9,7 @@ set_constant_variables()
 	targets_dir="$top_dir/targets"
 	patches_dir="$top_dir/patches-generic"
 	compress_js_dir="$top_dir/compressed_javascript"
-	
+
 	#script for building netfilter patches
 	netfilter_patch_script="$top_dir/netfilter-match-modules/integrate_netfilter_modules.sh"
 
@@ -26,9 +26,9 @@ set_version_variables()
 	branch_packages_path="packages"
 
 
-	# set svn revision number to use 
-	# you can set this to an alternate revision 
-	# or empty to checkout latest 
+	# set svn revision number to use
+	# you can set this to an alternate revision
+	# or empty to checkout latest
 	rnum=48220
 
 	#set date here, so it's guaranteed the same for all images
@@ -45,10 +45,10 @@ set_version_variables()
 	if [ -z "$full_gargoyle_version" ] ; then
 		full_gargoyle_version="Unknown"
 	fi
-	
+
 	# Used in gargoyle banner
 	short_gargoyle_version=$(echo "$full_gargoyle_version" | awk '{ print $1 ; }' | sed 's/[^0-9^A-Z^a-z^\.^\-^_].*$//g' )
-	
+
 	# Used for file naming
 	lower_short_gargoyle_version=$(echo "$short_gargoyle_version" | tr 'A-Z' 'a-z' )
 
@@ -108,7 +108,7 @@ create_gargoyle_banner()
 |                                                                |
 |----------------------------------------------------------------|
 EOF
-	
+
 
 	echo "$top_line"    >> "$banner_file_path"
 	echo "$middle_line" >> "$banner_file_path"
@@ -134,7 +134,7 @@ do_js_compress()
 		mkdir -p "$compress_js_dir/$pkg_rel_path"
 		cp "$jsdir/"*.js "$compress_js_dir/$pkg_rel_path/"
 		cd "$compress_js_dir/$pkg_rel_path/"
-	 	
+
 		for jsf in *.js ; do
 	 		if [ -n "$uglifyjs_arg2" ] ; then
 				"$uglifyjs_arg1" "$uglifyjs_arg2" "$jsf" > "$jsf.cmp"
@@ -154,25 +154,25 @@ distrib_copy_arch_ind_ipk()
 	local tgt="$1"
 	local ltype="$2"
 	local di=1
-	
+
 	local dpkgs=$(find "$top_dir/package" -path '*plugin-gargoyle-*' -and -name 'Makefile' -and -not -path '*-i18n-*' | xargs grep -s -l "DEPENDS:=+gargoyle$" | xargs grep -s -l "PKGARCH:=all$" | awk -F'/' '{print $(NF-1)}')
-	
+
 	# printf -- '%s\n' "${dpkgs[@]}"
-	
+
 	if [ ! -d "$top_dir/Distribution/architecture-independent packages ]" ] ; then
 		mkdir -p "$top_dir/Distribution/architecture-independent packages"
 	fi
 	#if [ ! -d "$top_dir/Distribution/theme packages ]" ] ; then
 	#	mkdir -p "$top_dir/Distribution/theme packages"
 	#fi
-	
+
 	if [ ! -d "$top_dir/Distribution/theme packages ]" ] && [ "$ltype" = 'internationalize' ] ; then
 		mkdir -p "$top_dir/Distribution/language packages"
 	fi
-	
+
 	while true; do
 		local apkg=$(echo "$dpkgs" | awk -v rec=$di 'NR==rec {print $0}')
-		[[ -z "$apkg" ]] && 
+		[[ -z "$apkg" ]] &&
 		{
 			break
 		} || {
@@ -185,7 +185,7 @@ distrib_copy_arch_ind_ipk()
 		let di++
 	done
 	#cp -f "$top_dir/$tgt-src/bin/$tgt/packages/plugin-gargoyle-theme-"*".ipk" "$top_dir/Distribution/theme packages/"
-	
+
 	if [ "$ltype" = 'internationalize' ] ; then
 		cp -f "$top_dir/$tgt-src/bin/$tgt/packages/plugin-gargoyle-i18n-"*".ipk" "$top_dir/Distribution/language packages/"
 	fi
@@ -259,7 +259,7 @@ fi
 set_version_variables "$full_gargoyle_version"
 
 
-if [ -d "$top_dir/package-prepare" ] ; then	
+if [ -d "$top_dir/package-prepare" ] ; then
 	rm -rf "$top_dir/package-prepare"
 fi
 
@@ -280,7 +280,7 @@ if [ "$js_compress" = "true" ] || [ "$js_compress" = "TRUE" ] || [ "$js_compress
 
 	uglify_test=$( echo 'var abc = 1;' | uglifyjs  2>/dev/null )
 	if [ "$uglify_test" != 'var abc=1' ] &&  [ "$uglify_test" != 'var abc=1;' ]  ; then
-		
+
 		node_bin="$top_dir/node/node"
 		uglifyjs_bin="$top_dir/UglifyJS/bin/uglifyjs"
 		if [ ! -e "$node_bin" ] && [ ! -e "$uglifyjs_bin" ] ; then
@@ -294,7 +294,7 @@ if [ "$js_compress" = "true" ] || [ "$js_compress" = "TRUE" ] || [ "$js_compress
 			git clone git://github.com/joyent/node.git
 			cd node
 			git checkout v0.11.14
-			./configure 
+			./configure
 			make
 			cd "$top_dir"
 
@@ -341,7 +341,7 @@ else
 	rm -rf "$openwrt_src_dir"
 	rm -rf "$openwrt_package_dir"
 fi
-	
+
 
 #download openwrt source if we haven't already
 if [ ! -d "$openwrt_src_dir" ] ; then
@@ -351,7 +351,7 @@ if [ ! -d "$openwrt_src_dir" ] ; then
 	fi
 	echo "fetching openwrt source"
 	rm -rf "$branch_name" "$branch_id"
-	if [ "$branch_is_trunk" = "1" ] ; then 
+	if [ "$branch_is_trunk" = "1" ] ; then
 		svn checkout $revision svn://svn.openwrt.org/openwrt/trunk "$branch_id"
 	else
 		svn checkout $revision svn://svn.openwrt.org/openwrt/branches/$branch_id/
@@ -362,11 +362,11 @@ if [ ! -d "$openwrt_src_dir" ] ; then
 	fi
 	cd "$branch_id"
 	find . -name ".svn" | xargs -r rm -rf
-	cd "$top_dir" 
+	cd "$top_dir"
 	mv "$branch_id" "$openwrt_src_dir"
 fi
 
-rm -rf "$openwrt_src_dir/dl" 
+rm -rf "$openwrt_src_dir/dl"
 ln -s "$top_dir/downloaded" "$openwrt_src_dir/dl"
 
 
@@ -390,13 +390,13 @@ for target in $targets ; do
 	#copy source to new, target build directory
 	cp -r "$openwrt_src_dir" "$target-src"
 
-	
+
 	#copy gargoyle-specific packages to build directory
 	package_dir="$top_dir/package-prepare"
 	if [ ! -d "$package_dir" ] ; then
 		package_dir="$top_dir/package"
 	fi
-	
+
 	gargoyle_packages=$(ls "$package_dir" )
 	for gp in $gargoyle_packages ; do
 		IFS_ORIG="$IFS"
@@ -405,7 +405,7 @@ for target in $targets ; do
 		matching_packages=$(find "$target-src/package" -name "$gp")
 		for mp in $matching_packages ; do
 			if [ -d "$mp" ] && [ -e "$mp/Makefile" ] ; then
-				rm -rf "$mp" 
+				rm -rf "$mp"
 			fi
 		done
 		IFS="$IFS_ORIG"
@@ -414,10 +414,10 @@ for target in $targets ; do
 
 
 
-	# specify default build profile	
+	# specify default build profile
 	default_profile="default"
 	if [ -n "$specified_profile" ] ; then
-		default_profile="$specified_profile" 
+		default_profile="$specified_profile"
 	fi
 	profile_target_dir="$target"
 	if [ "$target" = "custom" ] && [ -n "$custom_template" ] ; then
@@ -439,7 +439,7 @@ for target in $targets ; do
 	fi
 
 	echo ""
-	echo ""	
+	echo ""
 	echo "**************************************************************************"
 	echo "        Gargoyle is now building target: $target / $profile_name"
 	echo "                 (with $num_build_threads build threads)"
@@ -452,13 +452,13 @@ for target in $targets ; do
 
 	#copy this target configuration to build directory
 	cp "$targets_dir/$target/profiles/$default_profile/config" "$top_dir/${target}-src/.config"
-	
+
 	#pre-set the target in a custom build (default target only)
 	if [ "$target" = "custom" ] && [ "$default_profile" = "default" ] ; then
 		./dev-utils/set_config_custom_target.sh "$custom_target"
 	fi
-	
-	
+
+
 	[ ! -z $(which python 2>&1) ] && {
 		#finish internationalization by setting the target language & adding the i18n plugin to the config file
 		#finish localization just deletes the (now unnecessary) language packages from the config file
@@ -470,17 +470,17 @@ for target in $targets ; do
 	}
 
 
-	#if target is custom, checkout optional packages and copy all that don't 
+	#if target is custom, checkout optional packages and copy all that don't
 	#share names with gargoyle-specific packages to build directory
 	if [ "$target" = "custom" ] ; then
 		if [ ! -d "$openwrt_package_dir" ] ; then
-			
-			if [ "$branch_is_trunk" = "1" ] ; then 
-				svn checkout $revision svn://svn.openwrt.org/openwrt/packages "$openwrt_package_dir" 
+
+			if [ "$branch_is_trunk" = "1" ] ; then
+				svn checkout $revision svn://svn.openwrt.org/openwrt/packages "$openwrt_package_dir"
 			else
-				svn checkout $revision "svn://svn.openwrt.org/openwrt/$branch_packages_path" "$openwrt_package_dir" 
+				svn checkout $revision "svn://svn.openwrt.org/openwrt/$branch_packages_path" "$openwrt_package_dir"
 			fi
-			
+
 			cd "$openwrt_package_dir"
 			find . -name ".svn" | xargs rm -rf
 			for gp in $gargoyle_packages ; do
@@ -490,7 +490,7 @@ for target in $targets ; do
 				matching_packages=$(find . -name "$gp")
 				for mp in $matching_packages ; do
 					if [ -d "$mp" ] && [ -e "$mp/Makefile" ] ; then
-						rm -rf "$mp" 
+						rm -rf "$mp"
 					fi
 				done
 				IFS="$IFS_ORIG"
@@ -507,13 +507,13 @@ for target in $targets ; do
 
 
 
-	#enter build directory and make sure we get rid of all those pesky .svn files, 
+	#enter build directory and make sure we get rid of all those pesky .svn files,
 	#and any crap left over from editing
 	cd "$top_dir/$target-src"
 	find . -name ".svn"  | xargs rm -rf
 	find . -name "*~"    | xargs rm -rf
 	find . -name ".*sw*" | xargs rm -rf
-	
+
 	#Set gargoyle official version parameter in gargoyle package
 	echo "OFFICIAL_VERSION:=$full_gargoyle_version" > .ver
 	cat .ver "$package_dir/gargoyle/Makefile" >.vermake
@@ -532,21 +532,21 @@ for target in $targets ; do
 			sh $netfilter_patch_script . "$top_dir/netfilter-match-modules" 1 1 >/dev/null 2>&1
 		fi
 
-	
+
 		openwrt_target=$(get_target_from_config "./.config")
 		create_gargoyle_banner "$openwrt_target" "$profile_name" "$build_date" "$short_gargoyle_version" "$gargoyle_git_revision" "$branch_name" "$rnum" "package/base-files/files/etc/banner" "."
 
 		make $num_build_thread_str GARGOYLE_VERSION="$numeric_gargoyle_version" GARGOYLE_VERSION_NAME="$lower_short_gargoyle_version" GARGOYLE_PROFILE="$default_profile"
 
 	else
-		scripts/patch-kernel.sh . "$patches_dir/" 
-		scripts/patch-kernel.sh . "$targets_dir/$target/patches/" 
+		scripts/patch-kernel.sh . "$patches_dir/"
+		scripts/patch-kernel.sh . "$targets_dir/$target/patches/"
 		if [ "$target" = "custom" ] ; then
-			sh $netfilter_patch_script . "$top_dir/netfilter-match-modules" 1 0  
+			sh $netfilter_patch_script . "$top_dir/netfilter-match-modules" 1 0
 			make menuconfig
-			sh $netfilter_patch_script . "$top_dir/netfilter-match-modules" 0 1  
+			sh $netfilter_patch_script . "$top_dir/netfilter-match-modules" 0 1
 		else
-			sh $netfilter_patch_script . "$top_dir/netfilter-match-modules" 1 1 
+			sh $netfilter_patch_script . "$top_dir/netfilter-match-modules" 1 1
 		fi
 
 
@@ -556,12 +556,15 @@ for target in $targets ; do
 		make $num_build_thread_str V=99 GARGOYLE_VERSION="$numeric_gargoyle_version" GARGOYLE_VERSION_NAME="$lower_short_gargoyle_version" GARGOYLE_PROFILE="$default_profile"
 
 	fi
-	
+
 	if [ "$distribution" = "true" ] || [ "$distribution" = "TRUE" ] || [ "$distribution" = "1" ] ; then
 		distribution="true"
 		distrib_init
 		mkdir -p "$top_dir/Distribution/Images/$target-$default_profile"
 	fi
+
+	#free up disk space
+	rm -rf "$top_dir/$target-src/build_dir"
 
 	#copy packages to built/target directory
 	mkdir -p "$top_dir/built/$target/$default_profile"
@@ -577,12 +580,12 @@ for target in $targets ; do
 			cp "$inf" "$top_dir/built/$target/$default_profile/"
 		done
 	fi
-	
+
 	#copy images to images/target directory
 	mkdir -p "$top_dir/images/$target"
 	arch=$(ls bin)
 	image_files=$(ls bin/$arch/ 2>/dev/null)
-	if [ ! -e "$targets_dir/$target/profiles/$default_profile/profile_images"  ]  ; then 
+	if [ ! -e "$targets_dir/$target/profiles/$default_profile/profile_images"  ]  ; then
 		for imf in $image_files ; do
 			if [ ! -d "bin/$arch/$imf" ] ; then
 				newname=$(echo "$imf" | sed "s/openwrt/gargoyle_$lower_short_gargoyle_version/g")
@@ -612,7 +615,7 @@ for target in $targets ; do
 	if [ -z "$image_files" ] ; then
 		exit
 	fi
-	
+
 	if [ "$distribution" = "true" ] ; then
 		#Generate licenses file for each profile
 		#Copy architecture independent packages & themes to Distribution folder
@@ -630,8 +633,8 @@ for target in $targets ; do
 
 		#copy profile config and rebuild
 		cp "$targets_dir/$target/profiles/$profile_name/config" .config
-		
-		
+
+
 		[ ! -z $(which python 2>&1) ] && {
 			#finish internationalization by setting the target language & adding the i18n plugin to the config file
 			#finish localization just deletes the (now unnecessary) language packages from the config file
@@ -641,14 +644,14 @@ for target in $targets ; do
 			#NOTE: localize is not supported because it requires python
 			"$top_dir/i18n-scripts/finalize_tran_ltd.sh" "$target-src" "$active_lang"
 		}
-		
-		
+
+
 		openwrt_target=$(get_target_from_config "./.config")
 		create_gargoyle_banner "$openwrt_target" "$profile_name" "$build_date" "$short_gargoyle_version" "$gargoyle_git_revision" "$branch_name" "$rnum" "package/base-files/files/etc/banner" "."
 
-		
+
 		echo ""
-		echo ""	
+		echo ""
 		echo "**************************************************************************"
 		echo "        Gargoyle is now building target: $target / $profile_name"
 		echo "                 (with $num_build_threads build threads)"
@@ -659,7 +662,7 @@ for target in $targets ; do
 
 
 		if [ "$verbosity" = "0" ] ; then
-			
+
 			make $num_build_thread_str  GARGOYLE_VERSION="$numeric_gargoyle_version" GARGOYLE_VERSION_NAME="$lower_short_gargoyle_version" GARGOYLE_PROFILE="$profile_name"
 		else
 			make $num_build_thread_str V=99 GARGOYLE_VERSION="$numeric_gargoyle_version" GARGOYLE_VERSION_NAME="$lower_short_gargoyle_version" GARGOYLE_PROFILE="$profile_name"
@@ -667,7 +670,7 @@ for target in $targets ; do
 
 
 		#if we didn't build anything, die horribly
-		image_files=$(ls "bin/$arch/" 2>/dev/null)	
+		image_files=$(ls "bin/$arch/" 2>/dev/null)
 		if [ -z "$image_files" ] ; then
 			exit
 		fi
@@ -689,7 +692,7 @@ for target in $targets ; do
 
 
 
-	
+
 		if [ "$distribution" = "true" ] ; then
 			mkdir -p "$top_dir/Distribution/Images/$target-$profile_name"
 		fi
@@ -718,9 +721,8 @@ for target in $targets ; do
 		fi
 	done
 
-       
+
 
 	#cd back to parent directory for next target (if there is one)
 	cd "$top_dir"
 done
-
