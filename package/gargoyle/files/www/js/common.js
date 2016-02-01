@@ -1,8 +1,8 @@
 /*
- * This program is copyright © 2008-2011 Eric Bishop and is distributed under the terms of the GNU GPL 
- * version 2.0 with a special clarification/exception that permits adapting the program to 
+ * This program is copyright © 2008-2011 Eric Bishop and is distributed under the terms of the GNU GPL
+ * version 2.0 with a special clarification/exception that permits adapting the program to
  * configure proprietary "back end" software provided that all modifications to the web interface
- * itself remain covered by the GPL. 
+ * itself remain covered by the GPL.
  * See http://gargoyle-router.com/faq.html#qfoss for more information
  */
 
@@ -42,7 +42,7 @@ function setControlsEnabled(enabled, showWaitMessage, waitText)
 	{
 		var totalHeight="100%";
 		var totalWidth="100%";
-		
+
 		var heightFromDoc=0;
 		var widthFromDoc=0;
 		if(document.body.parentNode.scrollHeight)
@@ -72,11 +72,11 @@ function setControlsEnabled(enabled, showWaitMessage, waitText)
 			widthFromDoc = widthFromDoc >= document.width ? widthFromDoc : document.width
 		}
 		totalWidth = widthFromDoc > 0 ? widthFromDoc + "px" : totalWidth
-		
 
 
 
-		
+
+
 
 		var viewportHeight;
 		var vewportWidth;
@@ -97,7 +97,7 @@ function setControlsEnabled(enabled, showWaitMessage, waitText)
 		}
 
 		var leftOffset = Math.floor((viewportWidth-300)/2);
-		var topOffset  = Math.floor((viewportHeight-150)/2); 
+		var topOffset  = Math.floor((viewportHeight-150)/2);
 		var is_ie = false;
 		if(document.all)
 		{
@@ -128,7 +128,7 @@ function setControlsEnabled(enabled, showWaitMessage, waitText)
 		msg.style.left = leftOffset >= 0 ? leftOffset+"px" : "0px";
 		msg.style.top  = topOffset >=0 ? topOffset+"px" : "0px";
 
-		
+
 		dark.style.display="block";
 
 		if(showWaitMessage)
@@ -174,12 +174,12 @@ function getRequestObj()
 		{
 			req = new ActiveXObject("Msxml2.XMLHTTP");
 		}
-		catch (ex) 
+		catch (ex)
 		{
 			try
 			{
 				req = new ActiveXObject("Microsoft.XMLHTTP");
-			} 
+			}
 			catch (ex)
 			{
 				// Browser is not Ajax compliant
@@ -209,7 +209,7 @@ function runAjax(method, url, params, stateChangeFunction)
 		{
 			//for some reason we need at least one character of data, so use a space if params == null
 			params = (params == null) ? " " : params;
-			
+
 			req.open("POST", url, true);
 			req.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 			//req.setRequestHeader("Content-length", params.length);
@@ -231,7 +231,7 @@ function execute(cmd)
 	var commands = cmd.join("\n");
 	var param = getParameterDefinition("commands", commands) + "&" + getParameterDefinition("hash", document.cookie.replace(/^.*hash=/,"").replace(/[\t ;]+.*$/, ""));
 	setControlsEnabled(false, true, UI.WaitSettings);
-	
+
 	var stateChangeFunction = function(req)
 	{
 		if(req.readyState == 4)
@@ -255,106 +255,88 @@ function execute(cmd)
 // they are defined with set method
 function UCIContainer()
 {
-	this.keys = new Array();
-	this.values = new Array();
-	this.listOptions = new Array();
-
+	this.values = new Object();
+	const DOT = ".";
 
 	this.createListOption = function(pkg,section,option,destroy_existing_nonlist)
 	{
 		destroy_existing_nonlist = destroy_existing_nonlist == null ? true : false;
-		var  list_key = pkg + "\." + section + "\." + option;
-		if( this.listOptions[ list_key ] != null )
+		var  list_key = pkg + DOT + section + DOT + option;
+		var existing_value = this.values[ list_key ];
+		if( existing_value instanceof Array )
 		{
 			return;
 		}
-
-		this.listOptions[ list_key ] = 1;
-		if( this.values[list_key] != null )
+		else if(destroy_existing_nonlist)
 		{
-			var old = this.values[list_key];
-			this.values[list_key] = (!destroy_existing_nonlist) && old != null ? [old] : [] ; 
+			this.values[ list_key ] = [];
 		}
 		else
 		{
-			this.keys.push(list_key);
-			this.values[list_key] = [];
+			this.values[ list_key ] = [existing_value];
 		}
 	}
+
 	this.set = function(pkg, section, option, value, preserveExistingListValues)
 	{
 		preserveExistingListValues = preserveExistingListValues == null ? false : preserveExistingListValues;
-		var next_key = pkg + "\." + section;
-	       	if(option != null && option != "" )
+		var key = pkg + DOT + section;
+		if(option != null && option != "" )
 		{
-			next_key = next_key + "\." + option;
+			key = key + DOT + option;
 		}
-		if(this.values[next_key] != null)
-		{
-			if (this.listOptions[ next_key ] != null)
-			{
-				var set = this.values[next_key];
-				while(set.length > 0 && (!preserveExistingListValues))
+
+		if(this.values.hasOwnProperty(key))
+		{	// an existing key
+			if (preserveExistingListValues)
+			{ // guarantee that the existing values are an Array
+				var existing = this.values[ key ];
+				if (!(existing instanceof Array))
 				{
-					set.pop();
+					this.values[ key ] = (existing == null) ? [] : [existing];
 				}
-				if( value instanceof Array )
+
+				var existingValues = this.values[ key ];
+				var newValues = ( value instanceof Array ) ? value : [value];
+				for(nvIx=0; nvIx<newValues.length; nvIx++)
 				{
-					var vi;
-					for(vi=0; vi<value.length; vi++)
-					{
-						set.push( value[vi] );
+					var val = newValues[nvIx];
+					if (existingValues.indexOf(val) == -1)
+					{	// only add unique values
+						if (typeof existingValues[0] == "undefined" )	// hack!
+						{	// for some unknown reason often this is true!
+							existingValues[0] = val;
+						}
+						else
+						{
+							existingValues.push( val );
+						}
 					}
 				}
-				else
-				{
-					set.push(value);
-				}
-				this.values[next_key] = set;
 			}
 			else
-			{
-				this.values[next_key] = value;
+			{	// simply replace the existing values
+				this.values[ key ] = value;
 			}
 		}
 		else
-		{
-			this.keys.push(next_key);
-			if (this.listOptions[ next_key ] != null)
-			{
-				var set = [];
-				if(value instanceof Array)
-				{
-					var setIndex;
-					for(setIndex=0;setIndex < value.length; setIndex++)
-					{
-						set.push( value[setIndex] )
-					}
-				}
-				else
-				{
-					set = [ value ]
-				}
-				this.values[next_key] = set
-			}
-			else
-			{
-				this.values[next_key] = value;
-			}
+		{	// add a new key and value
+				this.values[ key ] = value;
 		}
 	}
 
+
 	this.get = function(pkg, section, option)
 	{
-		
-		var next_key = pkg + "\." + section;
+		var next_key = pkg + DOT + section;
 		if(option != null && option != '')
 		{
-			next_key = next_key + "\." + option;
+			next_key = next_key + DOT + option;
 		}
 		var value = this.values[next_key];
 		return value != null ? value : '';
 	}
+
 	this.removeAllSectionsOfType = function(pkg, type)
 	{
 		var removeSections = this.getAllSectionsOfType(pkg, type);
@@ -364,31 +346,53 @@ function UCIContainer()
 			this.removeSection(pkg, removeSections[rmIndex]);
 		}
 	}
+
 	this.getAllOptionsInSection = function(pkg, section, includeLists)
 	{
 		includeLists = includeLists == null ? false : includeLists;
 		var matches = new Array();
-		for (keyIndex in this.keys)
+		for (var key in this.values)
 		{
-			var key = this.keys[keyIndex];
-			var test = pkg + "." + section;
-			if(key.match(test) && key.match(/^[^\.]+\.[^\.]+\.[^\.]+/) && (includeLists || this.listOptions[key] == null) )
+		  if (this.values.hasOwnProperty(key))
 			{
-				var option = key.match(/^[^\.]+\.[^\.]+\.([^\.]+)$/)[1];
-				matches.push(option);
+				var test = pkg + "." + section;
+				if(key.match(test) && key.match(/^[^\.]+\.[^\.]+\.[^\.]+/) && (includeLists || !(this.values[key] instanceof Array)))
+				{
+					var option = key.match(/^[^\.]+\.[^\.]+\.([^\.]+)$/)[1];
+					matches.push(option);
+				}
 			}
 		}
 		return matches;
 	}
+
 	this.getAllSectionsOfType = function(pkg, type)
 	{
 		var matches = new Array();
-		for (keyIndex in this.keys)
+		for (var key in this.values)
 		{
-			key = this.keys[keyIndex];
-			if(key.match(pkg) && key.match(/^[^\.]+\.[^\.]+$/))
+		  if (this.values.hasOwnProperty(key))
 			{
-				if(this.values[key] == type)
+				if(key.match(pkg) && key.match(/^[^\.]+\.[^\.]+$/))
+				{
+					if(this.values[key] == type)
+					{
+						var section = key.match(/^[^\.]+\.([^\.]+)$/)[1];
+						matches.push(section);
+					}
+				}
+			}
+		}
+		return matches;
+	}
+
+	this.getAllSections = function(pkg)
+	{
+		var matches = new Array();
+		for (var key in this.values) {
+		  if (this.values.hasOwnProperty(key))
+			{
+				if(key.match(pkg) && key.match(/^[^\.]+\.[^\.]+$/))
 				{
 					var section = key.match(/^[^\.]+\.([^\.]+)$/)[1];
 					matches.push(section);
@@ -397,69 +401,40 @@ function UCIContainer()
 		}
 		return matches;
 	}
-	this.getAllSections = function(pkg)
-	{
-		var matches = new Array();
-		for (keyIndex in this.keys)
-		{
-			key = this.keys[keyIndex];
-			if(key.match(pkg) && key.match(/^[^\.]+\.[^\.]+$/))
-			{
-				var section = key.match(/^[^\.]+\.([^\.]+)$/)[1];
-				matches.push(section);
-			}
-		}
-		return matches;
-	}
 
 	this.remove = function(pkg, section, option)
 	{
-		var removeKey = pkg + "\." + section;
-	       	if(option != "")
+		var removeKey = pkg + DOT + section;
+	    if(option != "")
 		{
-			removeKey = removeKey + "\." + option;
-		}
-		if( this.listOptions[ removeKey ] != null )
-		{
-			this.listOptions[ removeKey ] = null;
+			removeKey = removeKey + DOT + option;
 		}
 
 		var value = this.values[removeKey];
-		if(value != null)
-		{
-			this.values[removeKey] = null;
-			var newKeys = [];
-			while(this.keys.length > 0)
-			{
-				var nextKey = this.keys.shift();
-				if(nextKey != removeKey){ newKeys.push(nextKey); }
-			}
-			this.keys = newKeys;
-		}
-		else
-		{
-			value = ''
-		}
+		value = (value == null) ? '' : value;
+		this.values[removeKey] = null;
 		return value;
 	}
+
 	this.removeSection = function(pkg, section)
 	{
 		removeKeys = new Array();
 		sectionDefined = false;
-		for (keyIndex in this.keys)
+		for (var key in this.values)
 		{
-			key = this.keys[keyIndex];
-			testExp = new RegExp(pkg + "\\." + section + "\\.");
-			if(key.match(testExp))
+		  if (this.values.hasOwnProperty(key))
 			{
-				var splitKey = key.split("\.");
-				removeKeys.push(splitKey[2]);
+				testExp = new RegExp(pkg + "\\." + section + "\\.");
+				if(key.match(testExp))
+				{
+					var splitKey = key.split(DOT);
+					removeKeys.push(splitKey[2]);
+				}
+				if(key == pkg + "." + section)
+				{
+					sectionDefined = true;
+				}
 			}
-			if(key == pkg + "." + section)
-			{
-				sectionDefined = true;
-			}
-
 		}
 		for (rkIndex in removeKeys)
 		{
@@ -475,30 +450,31 @@ function UCIContainer()
 	{
 		var copy = new UCIContainer();
 		var keyIndex = 0;
-		for(keyIndex = 0; keyIndex < this.keys.length; keyIndex++)
-		{
-			var key = this.keys[keyIndex];
-			var val = this.values[key]
-			if( this.listOptions[ key ] != null )
+		for (var key in this.values) {
+		  if (this.values.hasOwnProperty(key))
 			{
-				copy.listOptions[ key ] = 1;
-			}
-
-			var splitKey = key.match(/^([^\.]+)\.([^\.]+)\.([^\.]+)$/);
-			if(splitKey == null)
-			{
-				splitKey = key.match(/^([^\.]+)\.([^\.]+)$/);
-				if(splitKey != null)
+				var val = this.values[key]
+				if (val instanceof Array)
 				{
-					splitKey.push("");
+					val = val.slice(0);
 				}
-				else
+
+				var splitKey = key.match(/^([^\.]+)\.([^\.]+)\.([^\.]+)$/);
+				if(splitKey == null)
 				{
+					splitKey = key.match(/^([^\.]+)\.([^\.]+)$/);
+					if(splitKey != null)
+					{
+						splitKey.push("");
+					}
+					else
+					{
 					//should never get here -- if problems put debugging code here
 				        //val = val;    // good enough for a breakpoint to be set.
+					}
 				}
+				copy.set(splitKey[1], splitKey[2], splitKey[3], val);
 			}
-			copy.set(splitKey[1], splitKey[2], splitKey[3], val, true);
 		}
 		return copy;
 	}
@@ -507,16 +483,18 @@ function UCIContainer()
 	{
 		var str="";
 		var keyIndex=0;
-		for(keyIndex=0; keyIndex < this.keys.length; keyIndex++)
+		for (var key in this.values)
 		{
-			var key = this.keys[keyIndex]
-			if(this.values[key] instanceof Array )
+		  if (this.values.hasOwnProperty(key))
 			{
-				str=str+ "\n" + key + " = \"" + this.values[key].join(",") + "\"";
-			}
-			else
-			{
-				str=str+ "\n" + key + " = \"" + this.values[key] + "\"";
+				if(this.values[key] instanceof Array )
+				{
+					str=str+ "\n" + key + " = \"" + this.values[key].join(",") + "\"";
+				}
+				else
+				{
+					str=str+ "\n" + key + " = \"" + this.values[key] + "\"";
+				}
 			}
 		}
 		return str;
@@ -526,91 +504,93 @@ function UCIContainer()
 	this.getScriptCommands = function(oldSettings)
 	{
 		var commandArray = new Array();
-		
+
 		var listsWithoutUpdates = [];
 
-		var keyIndex=0;	
-		for(keyIndex=0; keyIndex < oldSettings.keys.length; keyIndex++)
+		for (var key in oldSettings.values)
 		{
-			var key = oldSettings.keys[keyIndex];
-			var oldValue = oldSettings.values[key];
-			var newValue = this.values[key];
+			if (oldSettings.values.hasOwnProperty(key))
+			{
+				var oldValue = oldSettings.values[key];
+				var newValue = this.values[key];
 
-			if( (oldValue instanceof Array && !(newValue instanceof Array)) || (newValue instanceof Array   && !(oldValue instanceof Array))  ) 
-			{
-				commandArray.push( "uci del " + key);
-			}
-			else if (oldValue instanceof Array && newValue instanceof Array)
-			{
-				var matches = oldValue.length == newValue.length;
-				if(matches)
-				{
-					var sortedOld = oldValue.sort()
-					var sortedNew = newValue.sort()
-					var sortedIndex;
-					for(sortedIndex=0; matches && sortedIndex <sortedOld.length; sortedIndex++)
-					{
-						matches = sortedOld[sortedIndex] == sortedNew[sortedIndex] ? true : false
-					}
-				}
-				if(matches)
-				{
-					listsWithoutUpdates[key] = 1
-				}
-				else
+				if( (oldValue instanceof Array && !(newValue instanceof Array)) || (newValue instanceof Array   && !(oldValue instanceof Array))  )
 				{
 					commandArray.push( "uci del " + key);
 				}
+				else if (oldValue instanceof Array && newValue instanceof Array)
+				{
+					var matches = oldValue.length == newValue.length;
+					if(matches)
+					{
+						var sortedOld = oldValue.sort()
+						var sortedNew = newValue.sort()
+						var sortedIndex;
+						for(sortedIndex=0; matches && sortedIndex <sortedOld.length; sortedIndex++)
+						{
+							matches = sortedOld[sortedIndex] == sortedNew[sortedIndex] ? true : false
+						}
+					}
+					if(matches)
+					{
+						listsWithoutUpdates[key] = 1
+					}
+					else
+					{
+						commandArray.push( "uci del " + key);
+					}
 
-			}
-			else if((newValue == null || newValue == '') && (oldValue != null && oldValue !=''))
-			{
-				commandArray.push( "uci del " + key);
+				}
+				else if((newValue == null || newValue == '') && (oldValue != null && oldValue !=''))
+				{
+					commandArray.push( "uci del " + key);
+				}
 			}
 		}
 
-		for(keyIndex=0; keyIndex < this.keys.length; keyIndex++)
+		for (var key in this.values)
 		{
-			var key = this.keys[keyIndex];
-			var oldValue = oldSettings.values[key];
-			var newValue = this.values[key];
-			try
+			if (this.values.hasOwnProperty(key))
 			{
-
-				if( (oldValue instanceof Array) || (newValue instanceof Array) )
+				var oldValue = oldSettings.values[key];
+				var newValue = this.values[key];
+				try
 				{
-					if(newValue instanceof Array)
+					if( (oldValue instanceof Array) || (newValue instanceof Array) )
 					{
-						if(listsWithoutUpdates[key] == null)
+						if(newValue instanceof Array)
 						{
-							var vi;
-							for(vi=0; vi< newValue.length ; vi++)
+							if(listsWithoutUpdates[key] == null)
 							{
-								var nv = "" + newValue[vi] + "";
-								commandArray.push( "uci add_list " + key + "=\'" + nv.replace(/'/, "'\\''") + "\'" );
+								var vi;
+								for(vi=0; vi< newValue.length ; vi++)
+								{
+									var nv = "" + newValue[vi] + "";
+									commandArray.push( "uci add_list " + key + "=\'" + nv.replace(/'/, "'\\''") + "\'" );
+								}
 							}
 						}
+						else
+						{
+							newValue = "" + newValue + ""
+							commandArray.push( "uci set " + key + "=\'" + newValue.replace(/'/, "'\\''") + "\'" );
+						}
 					}
-					else
+					else if(oldValue != newValue && (newValue != null && newValue !=''))
 					{
 						newValue = "" + newValue + ""
 						commandArray.push( "uci set " + key + "=\'" + newValue.replace(/'/, "'\\''") + "\'" );
 					}
 				}
-				else if(oldValue != newValue && (newValue != null && newValue !=''))
-				{		
-					newValue = "" + newValue + ""
-					commandArray.push( "uci set " + key + "=\'" + newValue.replace(/'/, "'\\''") + "\'" );
+				catch(e)
+				{
+					alert("bad key = " + key + "\n");
 				}
-			}
-			catch(e)
-			{
-				alert("bad key = " + key + "\n");
 			}
 		}
 
 		commandArray.push("uci commit");
-		
+
 		return commandArray.join("\n");
 	}
 }
@@ -747,7 +727,7 @@ function getWirelessMode(uciTest)
 		}
 	}
 
-	
+
 	var p = ap != '' && other != '' ? '+' : '';
 	var wirelessMode = ap + p + other;
 	var wirelessMode= wirelessMode == '' ? 'disabled' : wirelessMode;
@@ -781,7 +761,7 @@ function setDescriptionVisibility(descriptionId, defaultDisplay, displayText, hi
 	// we don't wait/notify user on completion so update seems instant
 	var param = getParameterDefinition("commands", command)  + "&" + getParameterDefinition("hash", document.cookie.replace(/^.*hash=/,"").replace(/[\t ;]+.*$/, ""));
 
-	runAjax("POST", "utility/run_commands.sh", param, function(){ return 0; }); 
+	runAjax("POST", "utility/run_commands.sh", param, function(){ return 0; });
 }
 
 function initializeDescriptionVisibility(testUci, descriptionId, defaultDisplay, displayText, hideText)
@@ -827,7 +807,7 @@ function getSubnetRange(mask, ip)
 		}
 		subnetBits = subnetBits + nextBits;
 	}
-	
+
 	var subnetLength = Math.pow(2, subnetBits);
 	var testIpEnd = parseInt( (ip.split("."))[3] );
 
@@ -875,7 +855,7 @@ function proofreadFields(inputIds, labelIds, functions, validReturnCodes, visibi
 		if(isVisible)
 		{
 			input = fieldDocument.getElementById(inputIds[idIndex]);
-			
+
 			f = functions[idIndex];
 			proofreadText(input, f, validReturnCodes[idIndex]);
 
@@ -919,7 +899,7 @@ function parseBytes(bytes, units, abbr, dDgt)
 	{
 		parsed = (bytes/(1024)).toFixed(dDgt||3) + spcr + (abbr?UI.KB:UI.KBy);
 	}
-	
+
 	return parsed;
 }
 
@@ -927,7 +907,7 @@ function parseKbytesPerSecond(kbytes, units)
 {
 	var parsed;
 	units = units != "bytes/s" && units != "KBytes/s" && units != "MBytes/s" ? "mixed" : units;
-	
+
 	if( (units == "mixed" && kbytes > 1024) || units == "MBytes/s")
 	{
 		parsed = (kbytes/(1024)).toFixed(3) + " "+UI.MBs;
@@ -942,15 +922,15 @@ function parseKbytesPerSecond(kbytes, units)
 function truncateDecimal(dec)
 {
 	result = "" + ((Math.floor(dec*1000))/1000);
-	
-	//make sure we have exactly three decimal places so 
+
+	//make sure we have exactly three decimal places so
 	//results line up properly in table presentation
 	decMatch=result.match(/.*\.(.*)$/);
 	if(decMatch == null)
 	{
 		result = result + ".000"
 	}
-	else 
+	else
 	{
 		if(decMatch[1].length==1)
 		{
@@ -972,9 +952,20 @@ function enableAssociatedField(checkbox, associatedId, defaultValue, controlDocu
 	setElementEnabled(element, checkbox.checked, defaultValue);
 }
 
+function enableAssociatedFields(checkbox, associatedId, defaultValue, controlDocument)
+{
+	associatedId = Array.isArray(associatedId) ? associatedId : [associatedArray];
+	defaultValue = Array.isArray(defaultValue) ? defaultValue : [defaultValue];
+	if (associatedId.length == defaultValue.length){
+		for (index=0; index < associatedId.length; index++)
+		{
+			enableAssociatedField(checkbox, associatedId[index], defaultValue[index], controlDocument);
+		}
+	}
+}
+
 function setElementEnabled(element, enabled, defaultValue)
 {
-	
 	if(enabled)
 	{
 		element.readonly=false;
@@ -1025,7 +1016,7 @@ function setElementEnabled(element, enabled, defaultValue)
 function getSelectedValue(selectId, controlDocument)
 {
 	controlDocument = controlDocument == null ? document : controlDocument;
-	
+
 	if(controlDocument.getElementById(selectId) == null)
 	{
 		alert(UI.Err+": " + selectId + " "+UI.nex);
@@ -1045,7 +1036,7 @@ function getSelectedValue(selectId, controlDocument)
 function getSelectedText(selectId, controlDocument)
 {
 	controlDocument = controlDocument == null ? document : controlDocument;
-	
+
 	selectedIndex = controlDocument.getElementById(selectId).selectedIndex;
 	selectedText = "";
 	if(selectedIndex >= 0)
@@ -1058,7 +1049,7 @@ function getSelectedText(selectId, controlDocument)
 function setSelectedValue(selectId, selection, controlDocument)
 {
 	var controlDocument = controlDocument == null ? document : controlDocument;
-	
+
 	var selectElement = controlDocument.getElementById(selectId);
 	if(selectElement == null){ alert(UI.Err+": " + selectId + " "+UI.nex); }
 
@@ -1082,7 +1073,7 @@ function setSelectedValue(selectId, selection, controlDocument)
 function setSelectedText(selectId, selection, controlDocument)
 {
 	controlDocument = controlDocument == null ? document : controlDocument;
-	
+
 	selectElement = controlDocument.getElementById(selectId);
 	selectionFound = false;
 	for(optionIndex = 0; optionIndex < selectElement.options.length && (!selectionFound); optionIndex++)
@@ -1106,7 +1097,7 @@ function addOptionToSelectElement(selectId, optionText, optionValue, before, con
 	option = controlDocument.createElement("option");
 	option.text=optionText;
 	option.value=optionValue;
-	
+
 	//FUCK M$ IE, FUCK IT UP THE ASS WITH A BASEBALL BAT.  A BIG WOODEN ONE. WITH SPLINTERS.
 	try
 	{
@@ -1120,14 +1111,14 @@ function addOptionToSelectElement(selectId, optionText, optionValue, before, con
 		}
 		else
 		{
-			controlDocument.getElementById(selectId).add(option, before.index);	
+			controlDocument.getElementById(selectId).add(option, before.index);
 		}
 	}
 }
 function removeOptionFromSelectElement(selectId, optionText, controlDocument)
 {
 	controlDocument = controlDocument == null ? document : controlDocument;
-	
+
 	selectElement = controlDocument.getElementById(selectId);
 	selectionFound = false;
 	for(optionIndex = 0; optionIndex < selectElement.options.length && (!selectionFound); optionIndex++)
@@ -1236,7 +1227,7 @@ function setVariableFromModifiedValue(params)
 		{
 			uci.set(pkg, section, option, modFunction(value));
 		}
-	}	
+	}
 }
 function setVariableFromCombined(params)
 {
@@ -1248,7 +1239,7 @@ function setVariableFromCombined(params)
 	option           = params[5];
 	setIfBlank       = params[6];
 	combineFunction  = params[7];
-	
+
 	isVisible = true;
 	if(visibilityId != null)
 	{
@@ -1307,7 +1298,7 @@ function setVariableFromConcatenation(params)
 }
 function setVariableConditionally(params)
 {
-	elementId    = params[0]; 
+	elementId    = params[0];
 	visibilityId = params[1];
 	uci          = params[2];
 	pkg          = params[3];
@@ -1316,7 +1307,7 @@ function setVariableConditionally(params)
 	testFunction = params[6];
 	useValueFromElement = params[7];
 	alternateValue =      params[8];
-	
+
 	isVisible = true;
 	if(visibilityId != null)
 	{
@@ -1325,7 +1316,7 @@ function setVariableConditionally(params)
 	if(isVisible==true)
 	{
 		value = useValueFromElement == true ? document.getElementById(elementId).value : alternateValue;
-		
+
 		if(testFunction(value))
 		{
 			uci.set(pkg, section, option, value);
@@ -1371,7 +1362,7 @@ function loadSelectedValueFromVariable(params)
 	var section      = params[3];
 	var option       = params[4];
 	var defaultValue = params[5];
-	
+
 	var v=uci.get(pkg, section, option);
 	if(v != null && v != '')
 	{
@@ -1393,7 +1384,7 @@ function loadValueFromVariable(params)
 	var section      = params[3];
 	var option       = params[4];
 	var defaultValue = params[5];
-	
+
 	var v=uci.get(pkg, section, option);
 	var e=document.getElementById(elementId);
 	if(v != null && v != '')
@@ -1421,7 +1412,7 @@ function loadValueFromModifiedVariable(params)
 	var option       = params[4];
 	var defaultValue = params[5];
 	var modificationFunction = params[6];
-	
+
 	var v=modificationFunction(uci.get(pkg, section, option));
 	var e=document.getElementById(elementId);
 	if(v != null && v != '')
@@ -1431,7 +1422,7 @@ function loadValueFromModifiedVariable(params)
 	else if(defaultValue != null)
 	{
 		e.value = defaultValue;
-	}	
+	}
 
 }
 function loadValueFromVariableAtIndex(params)
@@ -1443,10 +1434,10 @@ function loadValueFromVariableAtIndex(params)
 	var option       = params[4];
 	var defaultValue = params[5];
 	var index        = params[6];
-	
+
 	var vStr=uci.get(pkg, section, option);
 	var vSplit = vStr.split(/[,\t ]+/);
-	
+
 
 	var v;
 	if(index < vSplit.length)
@@ -1457,7 +1448,7 @@ function loadValueFromVariableAtIndex(params)
 	{
 		v = '';
 	}
-	
+
 	var e=document.getElementById(elementId);
 	if(v != null && v != '')
 	{
@@ -1487,7 +1478,7 @@ function isArray(obj)
 }
 
 function loadVariables(uci, varIds, varPkgs, varSections, varOptions, varParams, varFunctions)
-{	
+{
 	for (idIndex in varIds)
 	{
 		nextId      = varIds[idIndex];
@@ -1511,7 +1502,7 @@ function loadVariables(uci, varIds, varPkgs, varSections, varOptions, varParams,
 			nextFunc([nextId, uci, nextPkg, nextSection, nextOption, nextParams]);
 		}
 	}
-}	
+}
 function loadValueFromMultipleVariables(params)
 {
 	var elementId   = params[0];
@@ -1577,6 +1568,7 @@ function validateIP(address)
 	//3 = ends with 255 (actually, broadcast address can end with other value if subnet smaller than 255... but let's not worry about that)
 	//4 = value >255 in at least one field
 	//5 = improper format
+	//6 = invalid characters
 
 	var errorCode = 0;
 	if(address == "0.0.0.0")
@@ -1634,6 +1626,59 @@ function validateMac(mac)
 	return errorCode;
 }
 
+/*
+* Each Group is reflected by an ipset of the same name so the Group Name must
+ be a valid ipset name.
+*/
+function validateGroup(name)
+{
+	var errorCode = 0;
+	if(name.match(/^[a-zA-Z0-9-_.:]{2,63}$/) == null)
+	{
+		errorCode = 6;
+	}
+	return errorCode;
+}
+
+
+/*
+* Host names may include a-z, A-Z, 0-9 and -
+*/
+function validateHost(name)
+{
+	var errorCode = 0;
+	if(name.match(/^[a-zA-Z0-9-]{2,63}$/) == null)
+	{
+		errorCode = 6;
+	}
+	return errorCode;
+}
+
+
+/*
+* UCI names may include a-z, A-Z, 0-9 and _
+*/
+function validateUCI(name)
+{
+	var errorCode = 0;
+	if(name.match(/^[a-zA-Z0-9_]{2,63}$/) == null)
+	{
+		errorCode = 6;
+	}
+	return errorCode;
+}
+
+
+function validateMultipleIpsOrGroups(ips)
+{
+	var errorCode = validateGroup(ips);
+	if (errorCode != 0)
+	{
+		errorCode = validateMultipleIps(ips);
+	}
+	return errorCode;
+}
+
 function validateMultipleIps(ips)
 {
 	ips = ips.replace(/^[\t ]+/g, "");
@@ -1655,7 +1700,7 @@ function validateMultipleIps(ips)
 			else
 			{
 				valid = 1;
-			}		
+			}
 		}
 		else
 		{
@@ -1664,7 +1709,7 @@ function validateMultipleIps(ips)
 	}
 	return valid;
 }
-function validateMultipleIpsOrMacs(addresses)
+function validateMultipleIpsMacsOrGroups(addresses)
 {
 	var addr = addresses.replace(/^[\t ]+/g, "");
 	addr = addr.replace(/[\t ]+$/g, "");
@@ -1685,20 +1730,67 @@ function validateMultipleIpsOrMacs(addresses)
 			else
 			{
 				valid = 1;
-			}		
+			}
 		}
 		else if(nextAddr.match(/:/))
 		{
 			valid = validateMac(nextAddr);
 		}
-		else
+		else if(nextAddr.match(/\//))
 		{
 			valid = validateIpRange(nextAddr);
+		}
+		else
+		{
+			valid = validateGroup(nextAddr);
 		}
 	}
 	return valid;
 
 }
+
+function validateMultipleMacs(macs)
+{
+	macs = macs.replace(/^[\t ]+/g, "");
+	macs = macs.replace(/[\t ]+$/g, "");
+	var splitMacs = macs.split(/[\t ]+/);
+	var valid = splitMacs.length > 0 ? 0 : 1; //1= error, 0=true
+	while(valid == 0 && splitMacs.length > 0)
+	{
+		var nextMac = splitMacs.pop();
+		valid = validateMac(nextMac);
+	}
+	return valid;
+}
+
+function validateMultipleHosts(hosts)
+{
+	hosts = hosts.replace(/^[\t ]+/g, "");
+	hosts = hosts.replace(/[\t ]+$/g, "");
+	var splitHosts = hosts.split(/[\t ]*,[\t ]*/);
+	var valid = splitHosts.length > 0 ? 0 : 1; //1= error, 0=true
+	while(valid == 0 && splitHosts.length > 0)
+	{
+		var nextHost = splitHosts.pop();
+		valid = validateHost(nextHost);
+	}
+	return valid;
+}
+
+function validateMultipleUCIs(ucis)
+{
+	ucis = ucis.replace(/^[\t ]+/g, "");
+	ucis = ucis.replace(/[\t ]+$/g, "");
+	var splitUCIs = ucis.split(/[\t ]* [\t ]*/);
+	var valid = splitUCIs.length > 0 ? 0 : 1; //1= error, 0=true
+	while(valid == 0 && splitUCIs.length > 0)
+	{
+		var nextUCI = splitUCIs.pop();
+		valid = validateUCI(nextUCI);
+	}
+	return valid;
+}
+
 
 function validateDecimal(num)
 {
@@ -1766,7 +1858,7 @@ function validateNetMask(mask)
 	//return codes:
 	//0 = valid mask
 	//1 = invalid digit
-	//2 = invalid field order 
+	//2 = invalid field order
 	//3 = fields > 255
 	//4 = invalid format
 
@@ -1789,12 +1881,12 @@ function validateNetMask(mask)
 			{
 				errorCode = 2;
 			}
-			if(	ipFields[field] != 255 && 
-				ipFields[field] != 254 && 
-				ipFields[field] != 252 && 
+			if(	ipFields[field] != 255 &&
+				ipFields[field] != 254 &&
+				ipFields[field] != 252 &&
 				ipFields[field] != 248 &&
-				ipFields[field] != 240 && 
-				ipFields[field] != 224 && 
+				ipFields[field] != 240 &&
+				ipFields[field] != 224 &&
 				ipFields[field] != 192 &&
 				ipFields[field] != 128 &&
 				ipFields[field] != 0 &&
@@ -1823,15 +1915,23 @@ function validateIpRange(range)
 			var ipValid = validateIP(split[0]);
 			var maskValid = validateNetMask(split[1]) == 0 || validateNumericRange(split[1],1,31) == 0 ? 0 : 1;
 			valid = ipValid == 0 && maskValid == 0 ? 0 : 1;
-		}	
+		}
 	}
-	else 
+	else
 	{
 		valid = validateIP(range);
 	}
 	return valid;
 }
 
+function validateIpRangeOrGroup(range)
+{
+	if (range.indexOf(".") != -1)
+	{
+		return validateIpRange(range);
+	}
+	return validateGroup(range);
+}
 
 function validateLengthRange(text,min,max)
 {
@@ -1923,17 +2023,49 @@ function proofreadIpRange(input)
 {
 	proofreadText(input, validateIpRange, 0);
 }
+function proofreadIpRangeOrGroup(input)
+{
+	proofreadText(input, validateIpRangeOrGroup, 0);
+}
 function proofreadMac(input)
 {
 	proofreadText(input, validateMac, 0);
+}
+function proofreadMultipleMacs(input)
+{
+	proofreadText(input, validateMultipleMacs, 0);
 }
 function proofreadMultipleIps(input)
 {
 	proofreadText(input, validateMultipleIps, 0);
 }
-function proofreadMultipleIpsOrMacs(input)
+function proofreadMultipleIpsMacsOrGroups(input)
 {
-	proofreadText(input, validateMultipleIpsOrMacs, 0);
+	proofreadText(input, validateMultipleIpsMacsOrGroups, 0);
+}
+function proofreadMultipleIpsOrGroup(input)
+{
+	proofreadText(input, validateMultipleIpsOrGroups, 0);
+}
+function proofreadHost(input)
+{
+	proofreadText(input, validateHost, 0);
+}
+function proofreadMultipleHosts(input)
+{
+	proofreadText(input, validateMultipleHosts, 0);
+}
+function proofreadUCI(input)
+{
+	proofreadText(input, validateUCI, 0);
+}
+function proofreadMultipleUCIs(input)
+{
+	proofreadText(input, validateMultipleUCIs, 0);
+}
+function proofreadGroup(input)
+{
+	proofreadText(input, validateGroup, 0);
 }
 
 function proofreadDecimal(input)
@@ -2000,15 +2132,15 @@ function getBridgeSection(testUci)
 	var wanDef = uciOriginal.get("network", "wan", "");
 	var bridgeSection = "";
 	var sectionIndex;
-	
-	
+
+
 	for(sectionIndex=0; sectionIndex < allWirelessSections.length && bridgeSection == ""; sectionIndex++)
 	{
-		var getWirelessVar = function(varName) 
+		var getWirelessVar = function(varName)
 		{
-			return testUci.get("wireless", allWirelessSections[sectionIndex], varName).toLowerCase() 
+			return testUci.get("wireless", allWirelessSections[sectionIndex], varName).toLowerCase()
 		}
-		
+
 		if( getWirelessVar("mode") == "wds" && wanDef == "")
 		{
 			bridgeSection = allWirelessSections[sectionIndex];
@@ -2040,7 +2172,7 @@ function cnv24hToLocal(timestamp) {
 	style=uciOriginal.get("gargoyle", "global", "hour_style");
 	if (style == 24) return timestamp;
 	locale_time=""
-	
+
 	h_m_stamp=timestamp.split(":");
 	curr_hour=eval(h_m_stamp[0]);
 	if (UI.pAM.length > 0 && UI.pPM.length > 0) {
@@ -2056,7 +2188,7 @@ function cnv24hToLocal(timestamp) {
 //cnv_LocaleTime takes a full "09/16/13 21:09 EDT" date/time stamp
 //  returns (based on hour prefs & pre/post AM/PM notations): "09/16/13 21:09 EDT", "09/16/13 午前 9:09 UTC" or "09/16/13 9:09 PM EDT"
 //NOTE: requires uciOriginal to have the 'gargoyle' section; use 'gargoyle_header_footer [options] gargoyle'
-function cnv_LocaleTime(full_date) { // 
+function cnv_LocaleTime(full_date) { //
 	style=uciOriginal.get("gargoyle", "global", "hour_style");
 	if (style == 24) return full_date;
 	tcomponents=full_date.split(" ");
@@ -2115,16 +2247,17 @@ function textListToSpanElement(textList, addCommas, controlDocument)
 		{
 			spanEl.appendChild( controlDocument.createElement("br") );
 		}
-		
+
 		spanEl.appendChild(controlDocument.createTextNode(  textList[tlIndex] + (tlIndex < textList.length-1 && addCommas ? "," : "")  ));
 	}
 	return spanEl;
 }
 
-function addAddressStringToTable(controlDocument, newAddrs, tableContainerId, tableId, macsValid, ipValidType, alertOnError, tableWidth)
+function addAddressStringToTable(controlDocument, newAddrs, tableContainerId, tableId, macsValid, ipValidType, groupsValid, alertOnError, tableWidth)
 {
 	//ipValidType: 0=none, 1=ip only, 2=ip or ip subnet, 3>=ip, ip subnet or ip range
 	macsValid = macsValid == null ? true : macsValid;
+	groupsValid = groupsValid == null ? true : groupsValid;
 	ipValidType = ipValidType == null ? 3 : ipValidType;
 	var ipValidFunction;
 	if(ipValidType == 0)
@@ -2155,7 +2288,12 @@ function addAddressStringToTable(controlDocument, newAddrs, tableContainerId, ta
 		for(rowIndex=0; rowIndex < data.length; rowIndex++)
 		{
 			var addr = data[rowIndex][0];
-			if(validateMac(addr) == 0)
+			if (validateGroup(addr) == 0)
+			{
+				var groupMacs = uciOriginal("dhcp", addr, "mac");
+				allCurrentMacs.push(groupMacs);
+			}
+			else if(validateMac(addr) == 0)
 			{
 				allCurrentMacs.push(addr);
 			}
@@ -2177,16 +2315,16 @@ function addAddressStringToTable(controlDocument, newAddrs, tableContainerId, ta
 		var addr = splitAddrs[splitIndex];
 		var macValid = (macsValid && validateMac(addr) == 0);
 		var ipValid = (ipValidFunction(addr) == 0);
-		if(macValid || ipValid)
+		if(macValid || ipValid || groupsValid)
 		{
-			var currAddrs = macValid ? allCurrentMacs : allCurrentIps;
+			var currAddrs = (macValid || groupsValid) ? allCurrentMacs : allCurrentIps;
 			valid = currAddrs.length == 0 || (!testAddrOverlap(addr, currAddrs.join(","))) ? 0 : 1;
 			if(valid == 0)
 			{
 				currAddrs.push(addr); //if we're adding multiple addrs and there's overlap, this will allow us to detect it
 			}
 		}
-		else 
+		else
 		{
 			valid = 1;
 		}
@@ -2199,12 +2337,12 @@ function addAddressStringToTable(controlDocument, newAddrs, tableContainerId, ta
 		newAddrs = newAddrs.replace(/^[\t ]*/, "");
 		newAddrs = newAddrs.replace(/[\t ]*$/, "");
 		var addrs = newAddrs.split(/[\t ]*,[\t ]*/);
-		
+
 		while(addrs.length > 0)
 		{
 			addTableRow(table, [ addrs.shift() ], true, false, null, null, controlDocument);
 		}
-		
+
 		if(tableContainer.childNodes.length == 0)
 		{
 			tableContainer.appendChild(table);
@@ -2224,11 +2362,11 @@ function addAddressStringToTable(controlDocument, newAddrs, tableContainerId, ta
 }
 
 
-function addAddressesToTable(controlDocument, textId, tableContainerId, tableId, macsValid, ipValidType, alertOnError, tableWidth)
+function addAddressesToTable(controlDocument, textId, tableContainerId, tableId, macsValid, ipValidType, groupsValid, alertOnError, tableWidth)
 {
-	
+
 	var newAddrs = controlDocument.getElementById(textId).value;
-	var valid = addAddressStringToTable(controlDocument, newAddrs, tableContainerId, tableId, macsValid, ipValidType, alertOnError, tableWidth)
+	var valid = addAddressStringToTable(controlDocument, newAddrs, tableContainerId, tableId, macsValid, ipValidType, groupsValid, alertOnError, tableWidth)
 	if(valid)
 	{
 		controlDocument.getElementById(textId).value = "";
@@ -2294,14 +2432,14 @@ function getIpRangeIntegers(ipStr)
 
 function testSingleAddrOverlap(addrStr1, addrStr2)
 {
-	/* 
+	/*
 	 * this adjustment is useful in multiple places, particularly quotas
 	 * if you don't want these conversions, just validate quota BEFORE you
 	 * try calling this function
 	 */
 	var adj = function(addrStr)
 	{
-		addrStr = addrStr == "" ? "ALL" : addrStr.toUpperCase();	
+		addrStr = addrStr == "" ? "ALL" : addrStr.toUpperCase();
 		if(addrStr == "ALL_OTHERS_COMBINED" || addrStr == "ALL_OTHERS_INDIVIDUAL")
 		{
 			addrStr = "ALL_OTHERS_COMBINED";
@@ -2334,6 +2472,16 @@ function testSingleAddrOverlap(addrStr1, addrStr2)
 
 function testAddrOverlap(addrStr1, addrStr2)
 {
+	var groups = uciOriginal.getAllSectionsOfType("dhcp", "mac");
+	if (groups.indexOf(addrStr1) > -1)
+	{
+		addrStr1 = groupIPs(addrStr1).join();
+	}
+	if (groups.indexOf(addrStr2) > -1)
+	{
+		addrStr2 = groupIPs(addrStr2).join();
+	}
+
 	addrStr1 = addrStr1.replace(/^[\t ]+/, "");
 	addrStr1 = addrStr1.replace(/[\t ]+$/, "");
 	addrStr2 = addrStr2.replace(/^[\t ]+/, "");
@@ -2420,17 +2568,17 @@ function confirmPassword(confirmText, validatedFunc, invalidFunc)
 	}
 	var wlocation = "password_confirm.sh";
 	confirmWindow = window.open(wlocation, "password", "width=560,height=260,left=" + xCoor + ",top=" + yCoor );
-	
+
 	var okButton = createInput("button", confirmWindow.document);
 	var cancelButton = createInput("button", confirmWindow.document);
-	
+
 	okButton.value         = UI.OK;
 	okButton.className     = "default_button";
 	cancelButton.value     = UI.Cancel;
 	cancelButton.className = "default_button";
 
 
-	runOnEditorLoaded = function () 
+	runOnEditorLoaded = function ()
 	{
 		updateDone=false;
 		if(confirmWindow.document != null)
@@ -2440,7 +2588,7 @@ function confirmPassword(confirmText, validatedFunc, invalidFunc)
 				confirmWindow.document.getElementById("bottom_button_container").appendChild(okButton);
 				confirmWindow.document.getElementById("bottom_button_container").appendChild(cancelButton);
 				setChildText("confirm_text", confirmText, null, null, null, confirmWindow.document);
-			
+
 				cancelButton.onclick = function()
 				{
 					confirmWindow.close();
@@ -2448,7 +2596,7 @@ function confirmPassword(confirmText, validatedFunc, invalidFunc)
 				okButton.onclick = function()
 				{
 					setControlsEnabled(false, true, UI.VPass);
-	
+
 					var commands = "gargoyle_session_validator -p \"" + confirmWindow.document.getElementById("password").value + "\" -a \"dummy.browser\" -i \"127.0.0.1\""
 					var param = getParameterDefinition("commands", commands) + "&" + getParameterDefinition("hash", document.cookie.replace(/^.*hash=/,"").replace(/[\t ;]+.*$/, ""));
 					var stateChangeFunction = function(req)
@@ -2512,7 +2660,7 @@ function getHttpPort(uciData)
 
 function getUsedPorts()
 {
-	var dropbearSections = uciOriginal.getAllSections("dropbear"); 
+	var dropbearSections = uciOriginal.getAllSections("dropbear");
 	var sshPort   = uciOriginal.get("dropbear", dropbearSections[0], "Port")
 	var httpPort  = getHttpPort()
 	var httpsPort = getHttpsPort()
@@ -2561,7 +2709,7 @@ function getUsedPorts()
 					if(localport != remotePort && localport != "")
 					{
 						if(proto == "" || proto == "tcpudp")
-						{	
+						{
 							portDefs.push([remotePort, "tcp", defIndex[2] ])
 							portDefs.push([remotePort, "udp", defIndex[2] ])
 							foundPorts["tcp"][remotePort] = 1;
@@ -2746,9 +2894,9 @@ function query(queryHeader, queryText, buttonNameList, continueFunction )
 
 	queryFieldset = document.createElement("fieldset");
 	queryFieldset.innerHTML='<legend class="sectionheader" id="query_header">' + queryHeader + '</legend><div style="clear:both;display:block"><span class="nocolumn" id="query_text">' + queryText + '</span></div><div id="spacer_div" style="display:block; mrgin:8px;">&nbsp;</div><div id="query_button_container"></div>'
-	
+
 	document.getElementById("wait_msg").appendChild(queryFieldset)
-	
+
 	var buttonList = [];
 	var bIndex;
 	for(bIndex=0; bIndex < buttonNameList.length ; bIndex++)
@@ -2774,7 +2922,8 @@ function query(queryHeader, queryText, buttonNameList, continueFunction )
 }
 
 //apparently these var fbS=new Object(); //part of i18n  -> objects do not have a length (it is undefined)
-function ObjLen(an_obj) {
+function ObjLen(an_obj)
+{
 	var len=0;
 	for (item in an_obj) {
 		len++;
@@ -2782,3 +2931,68 @@ function ObjLen(an_obj) {
 	return len
 }
 
+function groupHosts(group)
+{
+	var groupHosts = [];
+	var hosts = uciOriginal.getAllSectionsOfType("dhcp", "host");
+	for (hIndex=0; hIndex < hosts.length; hIndex++)
+	{	// survey all of the devices
+		var host = hosts[hIndex];
+		var hostGroup = uciOriginal.get("dhcp", host, "group");
+		if (hostGroup.localeCompare(group) == 0)
+		{
+			groupHosts.push(host);
+		}
+	}
+	return groupHosts;
+}
+
+
+function groupIPs(group)
+{
+	var groupIPs = [];
+	var macs = uciOriginal("dhcp", group, "mac");
+	var ldMacIndex = 0;
+	var ldIpIndex = 1;
+	for (ldIndex=0; ldIndex < leaseData.length; ldIndex++)
+	{
+		var mac = leaseData[ldIndex][ldMacIndex];
+		if (typeof mac === 'string' && macs.indexOf(mac.toUpperCase()) > -1)
+		{
+			var ip = leaseData[ldIndex][ldIpIndex];
+			if (ip != null && ip.length > 0){
+				groupIPs.push(ip);
+			}
+		}
+	}
+	return groupIPs;
+}
+
+
+function resetGroupOptions(selectId, controlDocument)
+{
+	controlDocument = controlDocument == null ? document : controlDocument;
+	selectElement = controlDocument.getElementById(selectId);
+	if (selectElement != null)
+	{
+		var groups = uciOriginal.getAllSectionsOfType("dhcp", "mac");
+		if (groups.length == 0)
+		{
+			selectElement.disabled = true;
+		}
+		else
+		{
+			var mgVals = [ "" ];
+			var mgText = [ UI.SelGrp ];
+
+			for(gIndex = 0; gIndex < groups.length; gIndex++)
+			{
+				var group = groups[gIndex];
+				mgVals.push(group);
+				mgText.push(group);
+			}
+			setAllowableSelections(selectId, mgVals, mgText, controlDocument)
+			selectElement.disabled = false;
+		}
+	}
+}
