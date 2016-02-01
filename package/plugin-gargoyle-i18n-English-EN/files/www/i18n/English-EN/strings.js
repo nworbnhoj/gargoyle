@@ -60,6 +60,8 @@ UI.SelGrp="Group";
 UI.DspUsd="Bytes Used";
 UI.DspPct="Percent Used";
 UI.DspLim="Limit";
+UI.Recmd="Recommended";
+UI.SRecmd="<b>Recommended</b>";
 
 UI.never="never";
 UI.disabled="disabled";
