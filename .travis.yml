@@ -2,7 +2,7 @@ language: c
 compiler: gcc
 before_install:
 - test -n $CC && unset CC
-script: make ar71xx.usb >> /dev/null
+script: make V=0 ar71xx.usb
 install: true
 cache:
   directories:
