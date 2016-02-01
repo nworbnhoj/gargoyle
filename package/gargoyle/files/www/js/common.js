@@ -2996,6 +2996,7 @@ function resetGroupOptions(selectId, controlDocument)
 			selectElement.disabled = false;
 		}
 	}
+}
 
 function reregisterTableSort()
 {
