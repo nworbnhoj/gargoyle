@@ -7,6 +7,7 @@
  */
 
 var quotasStr=new Object(); //part of i18n
+var TSort_Data = new Array ('quota_table', 's', 's', 'm', '');
 
 var pkg = "firewall";
 var changedIds = [];
@@ -164,7 +165,6 @@ function resetData()
 	setDocumentFromUci(document, new UCIContainer(), "");
 
 	resetGroupOptions("group");
-
 	setVisibility(document);
 }
 
