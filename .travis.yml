@@ -2,11 +2,11 @@ language: c
 compiler: gcc
 before_install:
 - test -n $CC && unset CC
+install: true
 script: make ar71xx.usb >> /dev/null
 branches:
   only:
   - bleeding-edge
-install: true
 cache:
   directories:
   - *-src
