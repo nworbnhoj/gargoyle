@@ -3,7 +3,7 @@
 
 The Bleeding Edge includes Gargoyle developments that have not yet been reviewed or merged into Gargoyle. 
 
-[Images](https://github.com/nworbnhoj/gargoyle/tree/bleeding-edge/images/ar71xx) are available based on automated builds. Please do not flash these images to your router unless you have bricked a router or two and are familiar with the [Gargoyle](https://www.gargoyle-router.com/wiki/doku.php?id=failsafe_mode_recovery)/[OpenWrt](http://wiki.openwrt.org/doc/howto/generic.failsafe) recovery process. Not suitable for 4M routers. **Consider yourself duly warned**.
+[Images](https://github.com/nworbnhoj/gargoyle/tree/bleeding-edge/images/ar71xx)* are available based on automated builds. Please do not flash these images to your router unless you have bricked a router or two and are familiar with the [Gargoyle](https://www.gargoyle-router.com/wiki/doku.php?id=failsafe_mode_recovery)/[OpenWrt](http://wiki.openwrt.org/doc/howto/generic.failsafe) recovery process. Not suitable for 4M routers. **Consider yourself duly warned**.
 
 That said, I run this bleeding-edge build on my personal home router and all of the code included in the bleeding-edge has an open Pull Request on the Gargoyle master awaiting review.
 
@@ -13,4 +13,6 @@ Currently the additional functionality included in the bleeding-edge is:
 - **Table Sorting** On 9 tables
 - **Security Improvements** SSH authorized key management and stronger https encryption 
 
-Please provide your feedback in the [Gargoyle forum](https://www.gargoyle-router.com/phpbb/index.php)
+Please provide your feedback in the [Gargoyle forum](https://www.gargoyle-router.com/phpbb/viewtopic.php?f=7&t=8318#p35607)
+
+\* Click on the gargoyle [bleeding-edge image](https://github.com/nworbnhoj/gargoyle/tree/bleeding-edge/images/ar71xx) you want, click "raw", then "save file"
