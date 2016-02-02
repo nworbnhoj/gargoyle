@@ -3,7 +3,7 @@
 
 The Bleeding Edge includes Gargoyle developments that have not yet been reviewed or merged into Gargoyle. 
 
-[Images](https://github.com/nworbnhoj/gargoyle/tree/bleeding-edge/images/ar71xx)* are available based on automated builds. Please do not flash these images to your router unless you have bricked a router or two and are familiar with the [Gargoyle](https://www.gargoyle-router.com/wiki/doku.php?id=failsafe_mode_recovery)/[OpenWrt](http://wiki.openwrt.org/doc/howto/generic.failsafe) recovery process. Not suitable for 4M routers. **Consider yourself duly warned**.
+[Images](https://github.com/nworbnhoj/gargoyle/tree/bleeding-edge/images/ar71xx)* are available based on automated builds. Please do not flash these images to your router unless you have bricked a router or two and are familiar with the [Gargoyle](https://www.gargoyle-router.com/wiki/doku.php?id=failsafe_mode_recovery)/[OpenWrt](http://wiki.openwrt.org/doc/howto/generic.failsafe) recovery process. Not suitable for 4M routers. I have no idea what "preserve settings" or "restore backup" might do - best not. **Consider yourself duly warned**.
 
 That said, I run this bleeding-edge build on my personal home router (TL-WDR3600) and all of the code included in the bleeding-edge has an open Pull Request on the Gargoyle master awaiting review.
 
