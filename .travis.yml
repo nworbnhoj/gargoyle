@@ -2,7 +2,7 @@ language: c
 compiler: gcc
 before_install:
 - test -n $CC && unset CC
-install: travis-install.sh
+install: ./travis-install.sh
 script: make V=0 ar71xx.usb
 script: bash build.sh ar71xx.usb 1.9.x 99 ar71xx ar71xx true usb internationalize English-EN English-EN auto false >> /dev/null;
 cache:
