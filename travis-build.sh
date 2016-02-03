@@ -1,3 +1,5 @@
+#!/bin/bash
+
 GARGOYLE_VERSION:=1.9.X (Built $(shell echo "`date -u +%Y%m%d-%H%M` git@`git log -1 --pretty=format:%h`"))
 TARGET = ar71xx
 PROFILE = usb
