@@ -15,11 +15,8 @@ BUILD_THREADS=auto
 #BUILD_THREADS=1
 DISTRIBUTION=false
 
-%:
-	( \
-		if [ ! -d "$${target}-src" ] || [ "$(FULL_BUILD)" = "1" -o "$(FULL_BUILD)" = "true" -o "$(FULL_BUILD)" = "TRUE" ] ; then \
-			bash build.sh "$(TARGET)" "$(GARGOYLE_VERSION)" "$(V)" "$(CUSTOM_TARGET)" "$(CUSTOM_TEMPLATE)" "$(JS_COMPRESS)" "$(PROFILE)" "$(TRANSLATION)" "$(FALLBACK_LANG)" "$(ACTIVE_LANG)" "$(BUILD_THREADS)" "$(DISTRIBUTION)"; \
-		else \
-			bash rebuild.sh "$(TARGET)" "$(GARGOYLE_VERSION)" "$(V)" "$(JS_COMPRESS)" "$(PROFILE)" "$(TRANSLATION)" "$(FALLBACK_LANG)" "$(ACTIVE_LANG)" "$(BUILD_THREADS)" "$(DISTRIBUTION)"; \
-		fi ; \
-	)
+if [ ! -d "$${target}-src" ] || [ "$(FULL_BUILD)" = "1" -o "$(FULL_BUILD)" = "true" -o "$(FULL_BUILD)" = "TRUE" ] ; then \
+	bash build.sh "$(TARGET)" "$(GARGOYLE_VERSION)" "$(V)" "$(CUSTOM_TARGET)" "$(CUSTOM_TEMPLATE)" "$(JS_COMPRESS)" "$(PROFILE)" "$(TRANSLATION)" "$(FALLBACK_LANG)" "$(ACTIVE_LANG)" "$(BUILD_THREADS)" "$(DISTRIBUTION)";
+else
+	bash rebuild.sh "$(TARGET)" "$(GARGOYLE_VERSION)" "$(V)" "$(JS_COMPRESS)" "$(PROFILE)" "$(TRANSLATION)" "$(FALLBACK_LANG)" "$(ACTIVE_LANG)" "$(BUILD_THREADS)" "$(DISTRIBUTION)";
+fi ;
