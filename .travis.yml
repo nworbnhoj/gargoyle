@@ -1,6 +1,11 @@
 language: c
 compiler: gcc
-script: make ar71xx.routerstation >> /dev/null
+before_install:
+	- sudo apt-get -qq update
+	- sudo apt-get install -y git-core build-essential libssl-dev libncurses5-dev unzip gawk
+script: ./travis-build.sh ar71xx.usb
+# script: bash build.sh ar71xx 1.9.X 0 ar71xx ar71xx true usb English-EN English-EN auto false;
+# script: bash rebuild.sh ar71xx 1.9.X 0 true usb English-EN English-EN auto false;
 cache:
   directories:
   - *-src
