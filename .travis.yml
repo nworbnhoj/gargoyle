@@ -1,7 +1,6 @@
 language: c
 compiler: gcc
-
-script: make V=0 ar71xx.usb
+script: make ar71xx.routerstation >> /dev/null
 cache:
   directories:
   - *-src
