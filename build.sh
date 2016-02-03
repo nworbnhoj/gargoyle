@@ -295,7 +295,7 @@ if [ "$js_compress" = "true" ] || [ "$js_compress" = "TRUE" ] || [ "$js_compress
 			cd node
 			git checkout v0.11.14
 			./configure
-			make
+			make 1>/dev/null
 			cd "$top_dir"
 
 
