@@ -13,6 +13,8 @@ if [ -z "${BASH_VERSION}" ] || [ "${BASH_VERSION:0:1}" -lt '4' ]; then
 	exit 1
 fi
 
+#parse parameters
+target="$1"
 
 #initialize constants
 
@@ -39,23 +41,6 @@ rnum=48220
 
 
 cd "$top_dir"
-
-#parse parameters
-targets="$1"
-full_gargoyle_version="$2"
-verbosity="$3"
-custom_target="$4"
-custom_template="$5"
-js_compress="$6"
-specified_profile="$7"
-translation_type="$8"
-fallback_lang="$9"
-active_lang="${10}"
-num_build_threads="${11}"
-distribution="${12}"
-
-num_build_threads="auto"
-num_build_thread_str=""
 
 
 if [ -d "$top_dir/package-prepare" ] ; then
@@ -106,13 +91,19 @@ rm -rf "$openwrt_src_dir/dl"
 ln -s "$top_dir/downloaded" "$openwrt_src_dir/dl"
 
 
-	#remove old build files
-	rm -rf "$target-src"
-	rm -rf "$top_dir/built/$target"
-	rm -rf "$top_dir/images/$target"
+#remove old build files
+rm -rf "$target-src"
+rm -rf "$top_dir/built/$target"
+rm -rf "$top_dir/images/$target"
 
-	#copy source to new, target build directory
-	cp -r "$openwrt_src_dir" "$target-src"
+#copy source to new, target build directory
+cp -r "$openwrt_src_dir" "$target-src"
+
+
+
+
+#copy target default configuration to build directory
+cp "$targets_dir/$target/profiles/default/config" "$top_dir/${target}-src/.config"
 
 	#enter build directory and make sure we get rid of all those pesky .svn files,
 	#and any crap left over from editing
@@ -120,6 +111,28 @@ ln -s "$top_dir/downloaded" "$openwrt_src_dir/dl"
 	find . -name ".svn"  | xargs rm -rf
 	find . -name "*~"    | xargs rm -rf
 	find . -name ".*sw*" | xargs rm -rf
+
+
+	#copy gargoyle makefile to build directory
+	package_dir="$top_dir/package-prepare"
+	if [ ! -d "$package_dir" ] ; then
+		package_dir="$top_dir/package"
+	fi
+		gargoyle_packages=$(ls "$package_dir" )
+		for gp in $gargoyle_packages ; do
+			IFS_ORIG="$IFS"
+			IFS_LINEBREAK="$(printf '\n\r')"
+			IFS="$IFS_LINEBREAK"
+			matching_packages=$(find "$target-src/package" -name "$gp")
+			for mp in $matching_packages ; do
+				if [ -d "$mp" ] && [ -e "$mp/Makefile" ] ; then
+					rm -rf "$mp"
+				fi
+			done
+			IFS="$IFS_ORIG"
+			cp -r "$package_dir/$gp" "$target-src/package"
+		done
+	cp "$package_dir/gargoyle/Makefile" "$top_dir/$target-src/package/gargoyle/Makefile"
 
 	#patch & build
 	scripts/patch-kernel.sh . "$patches_dir/" >/dev/null 2>&1
