@@ -31,7 +31,6 @@ netfilter_patch_script="$top_dir/netfilter-match-modules/integrate_netfilter_mod
 #openwrt branch
 branch_name="Chaos Calmer"
 branch_id="chaos_calmer"
-branch_is_trunk="0"
 branch_packages_path="packages"
 
 # set svn revision number to use
@@ -72,11 +71,7 @@ if [ ! -d "$openwrt_src_dir" ] ; then
 	fi
 	echo "fetching openwrt source"
 	rm -rf "$branch_name" "$branch_id"
-	if [ "$branch_is_trunk" = "1" ] ; then
-		svn checkout $revision -q svn://svn.openwrt.org/openwrt/trunk "$branch_id"
-	else
-		svn checkout $revision -q svn://svn.openwrt.org/openwrt/branches/$branch_id/
-	fi
+	svn checkout $revision -q svn://svn.openwrt.org/openwrt/branches/$branch_id/
 	if [ ! -d "$branch_id" ] ; then
 		echo "ERROR: could not download source, exiting"
 		exit
@@ -112,28 +107,6 @@ cp "$targets_dir/$target/profiles/default/config" "$top_dir/${target}-src/.confi
 	find . -name "*~"    | xargs rm -rf
 	find . -name ".*sw*" | xargs rm -rf
 
-
-	#copy gargoyle makefile to build directory
-	package_dir="$top_dir/package-prepare"
-	if [ ! -d "$package_dir" ] ; then
-		package_dir="$top_dir/package"
-	fi
-		gargoyle_packages=$(ls "$package_dir" )
-		for gp in $gargoyle_packages ; do
-			IFS_ORIG="$IFS"
-			IFS_LINEBREAK="$(printf '\n\r')"
-			IFS="$IFS_LINEBREAK"
-			matching_packages=$(find "$target-src/package" -name "$gp")
-			for mp in $matching_packages ; do
-				if [ -d "$mp" ] && [ -e "$mp/Makefile" ] ; then
-					rm -rf "$mp"
-				fi
-			done
-			IFS="$IFS_ORIG"
-			cp -r "$package_dir/$gp" "$target-src/package"
-		done
-	cp "$package_dir/gargoyle/Makefile" "$top_dir/$target-src/package/gargoyle/Makefile"
-
 	#patch & build
 	scripts/patch-kernel.sh . "$patches_dir/" >/dev/null 2>&1
 	scripts/patch-kernel.sh . "$targets_dir/$target/patches/" >/dev/null 2>&1
@@ -141,23 +114,26 @@ cp "$targets_dir/$target/profiles/default/config" "$top_dir/${target}-src/.confi
 
 	openwrt_target=$(get_target_from_config "./.config")
 
+	#save openwrt variables for rebuild
+	echo "$rnum" > "$revision_save_dir/OPENWRT_REVISION"
+	echo "$branch_name"  > "$revision_save_dir/OPENWRT_BRANCH"
+
 	make
 
 	#free up disk space
 	rm -rf "$top_dir/$target-src/build_dir"
 
 	#copy packages to built/target directory
-	mkdir -p "$top_dir/built/$target/$default_profile"
+	mkdir -p "$top_dir/built/$target/default"
 	package_base_dir=$(find bin -name "base")
 	package_files=$(find "$package_base_dir" -name "*.ipk")
 	index_files=$(find "$package_base_dir" -name "Packa*")
 	if [ -n "$package_files" ] && [ -n "$index_files" ] ; then
-
 		for pf in $package_files ; do
-			cp "$pf" "$top_dir/built/$target/$default_profile/"
+			cp "$pf" "$top_dir/built/$target/default/"
 		done
 		for inf in $index_files ; do
-			cp "$inf" "$top_dir/built/$target/$default_profile/"
+			cp "$inf" "$top_dir/built/$target/default/"
 		done
 	fi
 
