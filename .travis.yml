@@ -3,7 +3,7 @@ compiler: gcc
 #before_install:
 #  - sudo apt-get -qq update
 #  - sudo apt-get install -y git-core build-essential libssl-dev libncurses5-dev unzip gawk
-script: travis_wait ./travis-build.sh
+script: travis_wait ./travis-build-openwrt.sh
 cache:
   directories:
   - *-src
