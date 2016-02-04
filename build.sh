@@ -352,9 +352,9 @@ if [ ! -d "$openwrt_src_dir" ] ; then
 	echo "fetching openwrt source"
 	rm -rf "$branch_name" "$branch_id"
 	if [ "$branch_is_trunk" = "1" ] ; then
-		svn checkout $revision svn://svn.openwrt.org/openwrt/trunk "$branch_id"
+		svn checkout $revision -q svn://svn.openwrt.org/openwrt/trunk "$branch_id"
 	else
-		svn checkout $revision svn://svn.openwrt.org/openwrt/branches/$branch_id/
+		svn checkout $revision -q svn://svn.openwrt.org/openwrt/branches/$branch_id/
 	fi
 	if [ ! -d "$branch_id" ] ; then
 		echo "ERROR: could not download source, exiting"
