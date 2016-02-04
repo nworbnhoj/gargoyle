@@ -118,7 +118,7 @@ cp "$targets_dir/$target/profiles/default/config" "$top_dir/${target}-src/.confi
 	echo "$rnum" > "$revision_save_dir/OPENWRT_REVISION"
 	echo "$branch_name"  > "$revision_save_dir/OPENWRT_BRANCH"
 
-	make V=50
+	make V=80
 
 	#free up disk space
 	rm -rf "$top_dir/$target-src/build_dir"
