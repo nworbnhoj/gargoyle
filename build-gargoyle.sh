@@ -480,7 +480,7 @@ for target in $targets ; do
 		echo "**************************************************************************"
 		echo ""
 
-		make -j1 V=30 GARGOYLE_VERSION="$numeric_gargoyle_version" GARGOYLE_VERSION_NAME="$lower_short_gargoyle_version" GARGOYLE_PROFILE="$profile"
+		make -j2 V=30 GARGOYLE_VERSION="$numeric_gargoyle_version" GARGOYLE_VERSION_NAME="$lower_short_gargoyle_version" GARGOYLE_PROFILE="$profile"
 
 		if [ -e "bin" ] ; then
 			#free up disk space
