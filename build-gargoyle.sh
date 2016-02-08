@@ -328,7 +328,7 @@ if [ "$1" == "openwrt" ] ; then
 	shift
 fi
 targets=$(echo $1  | sed 's/\..*$//')
-specified_profile=$(echo $1 | sed 's/^[^.]*[\.]*//')
+profile=$(echo $1 | sed 's/^[^.]*[\.]*//')
 shift
 packages=$@
 
@@ -377,7 +377,7 @@ ln -s "$top_dir/downloaded" "$openwrt_src_dir/dl"
 
 if [ "$targets" = "ALL" ]  || [ -z "$targets" ] ; then
 	targets=$(ls $targets_dir | sed 's/custom//g' 2>/dev/null)
-	specified_profile=""
+	profile="default"
 fi
 
 for target in $targets ; do
@@ -388,11 +388,11 @@ for target in $targets ; do
 		rm -rf "$target-src/package/*"
 	fi
 
-	if [ -z "$specified_profile" ] ; then # no specified profile so remove all old files
+	if [ -z "$profile" ] ; then # no specified profile so remove all old files
 		rm -rf "$top_dir/built/$target"
 		rm -rf "$top_dir/images/$target"
 	else 															# remove the profiles images
-		profile_images=$(cat "$targets_dir/$target/profiles/$specified_profile/profile_images" 2>/dev/null)
+		profile_images=$(cat "$targets_dir/$target/profiles/$profile/profile_images" 2>/dev/null)
 		mkdir -p "$top_dir/images/$target/"
 		for pi in $profile_images ; do
 			rm -rf "$top_dir/images/$target/"*"$pi"*
@@ -401,7 +401,7 @@ for target in $targets ; do
 
 	if [ "$build_openwrt" = true ] || [ ! -e "$target-src/bin" ] ; then # must build openwrt
 		cp -r "$openwrt_src_dir" "$target-src"
-		build_openwrt=false
+		build_openwrt=false		# once only
 	fi
 
 	package_dir="$top_dir/package-prepare"
@@ -461,7 +461,7 @@ for target in $targets ; do
 	scripts/patch-kernel.sh . "$targets_dir/$target/patches/" >/dev/null 2>&1
 	sh $netfilter_patch_script . "$top_dir/netfilter-match-modules" 1 1 >/dev/null 2>&1
 
-	profiles=$specified_profile;
+	profiles=$profile;
 	if [ -z "$profiles" ] ; then
 		profiles=$(ls "$targets_dir/$target/profiles")
 	fi
