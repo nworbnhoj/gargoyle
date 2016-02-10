@@ -7,7 +7,7 @@ script: travis_wait ./build-gargoyle.sh openwrt ar71xx.default
 cache:
   directories:
   - *-src
-#  - downloaded
+  - downloaded
 deploy:
   provider: releases
   api_key:
