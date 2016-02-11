@@ -455,7 +455,7 @@ for target in $targets ; do
 	find . -name "*~"    | xargs rm -rf
 	find . -name ".*sw*" | xargs rm -rf
 
-	# patch openwrt 
+	# patch openwrt
 	scripts/patch-kernel.sh . "$patches_dir/" >/dev/null 2>&1		# patch openwrt generic
 	scripts/patch-kernel.sh . "$targets_dir/$target/patches/" >/dev/null 2>&1
 	sh $netfilter_patch_script . "$top_dir/netfilter-match-modules" 1 1 >/dev/null 2>&1
@@ -480,7 +480,7 @@ for target in $targets ; do
 		echo "**************************************************************************"
 		echo ""
 
-		make -j1 V=s GARGOYLE_VERSION="$numeric_gargoyle_version" GARGOYLE_VERSION_NAME="$lower_short_gargoyle_version" GARGOYLE_PROFILE="$profile"
+		make -j1 GARGOYLE_VERSION="$numeric_gargoyle_version" GARGOYLE_VERSION_NAME="$lower_short_gargoyle_version" GARGOYLE_PROFILE="$profile"
 
 		if [ -e "bin" ] ; then
 		# free up disk space
