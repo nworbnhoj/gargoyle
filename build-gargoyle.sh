@@ -366,7 +366,7 @@ rm -rf "$openwrt_src_dir/dl"
 ln -s "$top_dir/downloaded" "$openwrt_src_dir/dl"
 
 if [ "$targets" = "ALL" ]  || [ -z "$targets" ] ; then
-	targets="$(find $top_dir/targets *)"
+	targets=$(find "$top_dir/targets" -type d)
 	profile="default"
 fi
 
@@ -376,22 +376,22 @@ for target in $targets ; do
 
 	if [ "$build_openwrt" = true ] ; then # clobber all build files from prior builds
 		rm -rf "$target-src/*"
+	else
+		if [ -z "$profile" ] ; then # no specified profile so remove all old images
+			rm -rf "$top_dir/built/$target"
+			rm -rf "$top_dir/images/$target"
+		else 															# remove just the profiles images
+			profile_images=$(cat "$targets_dir/$target/profiles/$profile/profile_images" 2>/dev/null)
+			mkdir -p "$top_dir/images/$target/"
+			for pi in $profile_images ; do
+				rm -rf "$top_dir/images/$target/"*"$pi"*
+			done
+		fi
 	fi
 
-	if [ -z "$profile" ] ; then # no specified profile so remove all old images
-		rm -rf "$top_dir/built/$target"
-		rm -rf "$top_dir/images/$target"
-	else 															# remove just the profiles images
-		profile_images=$(cat "$targets_dir/$target/profiles/$profile/profile_images" 2>/dev/null)
-		mkdir -p "$top_dir/images/$target/"
-		for pi in $profile_images ; do
-			rm -rf "$top_dir/images/$target/"*"$pi"*
-		done
-	fi
-
-	if [ "$build_openwrt" = true ] || [ ! -e "$target-src/bin" ] ; then # must build openwrt
-		build_openwrt=false												# once only
-		cp -r "$openwrt_src_dir" "$target-src"						# copy openwrt into build directory
+	if [ "$build_openwrt" = true ] ; then 		# must build openwrt
+		build_openwrt=false											# once only
+		cp -r "$openwrt_src_dir" "$target-src"	# copy openwrt into build directory
 	fi
 
 	package_dir="$top_dir/package-prepare"
@@ -423,7 +423,7 @@ for target in $targets ; do
 	# copy missing gargoyle-specific packages to build directory
 	gargoyle_packages=$(ls "$package_dir" )
 	for gp in $gargoyle_packages ; do
-		found=$(find "$target-src/package/*" -prune -name "$gp")
+		found=$(find "$target-src/package" -prune -name "$gp")
 		if [ -z "$found" ] ; then
 			cp -r "$package_dir/$gp" "$target-src/package"
 		fi
