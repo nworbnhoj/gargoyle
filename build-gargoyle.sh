@@ -366,7 +366,7 @@ rm -rf "$openwrt_src_dir/dl"
 ln -s "$top_dir/downloaded" "$openwrt_src_dir/dl"
 
 if [ "$targets" = "ALL" ]  || [ -z "$targets" ] ; then
-	targets="$(find '$targets_dir' '*' | sed 's/custom//g' 2>/dev/null)"
+	targets="$(find $top_dir/targets *)"
 	profile="default"
 fi
 
