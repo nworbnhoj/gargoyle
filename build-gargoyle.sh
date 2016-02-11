@@ -473,6 +473,7 @@ for target in $targets ; do
 		cp "$targets_dir/$target/profiles/$profile/config" "$top_dir/${target}-src/.config"
 
 		openwrt_target=$(get_target_from_config "./.config")
+		mkdir -p "package/base-files/files/etc/"
 		create_gargoyle_banner "$openwrt_target" "$profile" "$build_date" "$short_gargoyle_version" "$gargoyle_git_revision" "$branch_name" "$rnum" "package/base-files/files/etc/banner" "."
 
 		echo ""
