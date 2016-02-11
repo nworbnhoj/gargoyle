@@ -416,6 +416,7 @@ for target in $targets ; do
 	fi
 
 	# remove redundant gargoyle-specific packages from build directory
+	mkdir -p "$target-src/package"
 	for gp in $redundant_packages ; do # remove all packages for this target
 		IFS_ORIG="$IFS"
 		IFS_LINEBREAK="$(printf '\n\r')"
