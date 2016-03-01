@@ -9,9 +9,7 @@ That said, I run this bleeding-edge build on my personal home router (TL-WDR3600
 
 Currently the additional functionality included in the bleeding-edge is:
 - **Known Groups** The idea is to be able to set policy (Quota, QoS, Restrictions etc) over a Group of Known Devices (owned by an individual for example). To achieve this, the Known Devices need to be identified by their MAC address' and then arranged into Groups. Both Devices and Groups can be named by the Gargoyle Administrator [more...](https://github.com/nworbnhoj/gargoyle/tree/known-devices#gargoyle)
-- **Quota Usage Improvements** Color coded % usage and Bytes usage. 
 - **Table Sorting** On 9 tables
-- **Security Improvements** SSH authorized key management and stronger https encryption 
 
 Please provide your feedback in the [Gargoyle forum](https://www.gargoyle-router.com/phpbb/viewtopic.php?f=7&t=8318#p35607)
 
