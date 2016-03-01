@@ -76,6 +76,9 @@ function saveChanges()
 		var newLocalSshPort =  document.getElementById("local_ssh_port").value;
 		var remoteAttempts =  document.getElementById("remote_ssh_attempts").disabled ? "" : getSelectedValue("remote_ssh_attempts");
 		var uciPreCommands = [];
+		
+		var oldSshPwdEnabled = uciOriginal.get("dropbear", dropbearSections[0], "PasswordAuth")
+		var sshPwdEnabled = document.getElementById("pwd_auth_enabled").checked ? "on" : "off";
 		if(dropbearSections[0] != "global")
 		{
 			for(s=0; s < dropbearSections.length; s++)
@@ -83,7 +86,7 @@ function saveChanges()
 				uciPreCommands.push("uci del dropbear.@dropbear[0]" );
 			}
 			uciPreCommands.push("uci set dropbear.global=dropbear");
-			uciPreCommands.push("uci set dropbear.global.PasswordAuth='on'");
+			uciPreCommands.push("uci set dropbear.global.PasswordAuth='" + sshPwdEnabled + "'");
 			uciPreCommands.push("uci set dropbear.global.Port=" + newLocalSshPort);
 			if(remoteAttempts != "") { uciPreCommands.push("uci set dropbear.global.max_remote_attempts='" + remoteAttempts + "'" ); }
 			uciPreCommands.push("uci commit");
@@ -93,16 +96,22 @@ function saveChanges()
 			//update dropbear uci configuration
 			uci.set("dropbear", "global", "Port", newLocalSshPort);
 			if(remoteAttempts != "") { uci.set("dropbear", "global", "max_remote_attempts",  remoteAttempts ); }
+			uci.set("dropbear", "global", "PasswordAuth", sshPwdEnabled);
+
 
 		}
-		restartDropbear = oldLocalSshPort != document.getElementById("local_ssh_port").value; //only restart dropbear if we need to
+ 		//only restart dropbear if we need to
+		restartDropbear =	(oldLocalSshPort != document.getElementById("local_ssh_port").value) ||
+				 	(oldSshPwdEnabled != sshPwdEnabled );
 
 
 		authorizedKeys = new Array();
-		for (var key in authorizedKeyMap) {
-		    if (authorizedKeyMap.hasOwnProperty(key)) {
-		        authorizedKeys.push(authorizedKeyMap[key]);
-		    }
+		for (var key in authorizedKeyMap)
+		{
+			if (authorizedKeyMap.hasOwnProperty(key))
+			{
+				authorizedKeys.push(authorizedKeyMap[key]);
+			}
 		}
 		var sshKeysCommands = ["rm /etc/dropbear/authorized_keys"];
 		sshKeysCommands.push("echo '" + authorizedKeys.join("\n") + "' >> /etc/dropbear/authorized_keys");
@@ -159,13 +168,7 @@ function saveChanges()
 			}
 		}
 
-		sshPwdEnabled = document.getElementById("pwd_auth_enabled").checked ? "on" : "off";
-		if (sshPwdEnabled.localeCompare(uciOriginal.get("dropbear", "global", "PasswordAuth")) != 0)
-		{
-			uci.set("dropbear", "global", "PasswordAuth", sshPwdEnabled);
-			restartDropbear = true;
-		}
-
+	
 		//password update
 		passwordCommands = "";
 		newPassword = document.getElementById("password1").value;
@@ -276,6 +279,21 @@ function proofreadAll()
 		}
 	}
 
+
+	var ak = new Array();
+	for (var key in authorizedKeyMap)
+	{
+		if (authorizedKeyMap.hasOwnProperty(key))
+		{
+			ak.push(authorizedKeyMap[key]);
+		}
+	}
+	if(ak.length == 0 && (!document.getElementById("pwd_auth_enabled").checked))
+	{
+		errors.push(accessStr.CnntDsblPwd);
+	}
+
+
 	pass1 = document.getElementById("password1").value;
 	pass2 = document.getElementById("password2").value;
 	if( (pass1 != "" || pass2 != "") && pass1 != pass2)
@@ -355,9 +373,9 @@ function resetData()
 		}
 	}
 
-  resetAuthorizedKeysTable();
-  sshPwdEnabled = uciOriginal.get("dropbear", "global", "PasswordAuth") == "on" ? true : false;
-  document.getElementById("pwd_auth_enabled").checked = sshPwdEnabled;
+	resetAuthorizedKeysTable();
+	sshPwdEnabled = uciOriginal.get("dropbear", dropbearSections[0], "PasswordAuth") == "on" ? true : false;
+	document.getElementById("pwd_auth_enabled").checked = sshPwdEnabled;
 	document.getElementById("public_key_file").value = "";
 	document.getElementById('public_key_file').addEventListener('change', readKeyFile, false);
 
@@ -407,33 +425,25 @@ function resetData()
 		}
 	}
 
+	//clear public ssh key fields
+
+	document.getElementById('public_key_file').value = '';
+	document.getElementById('public_key_name').value = '';
+	document.getElementById('file_contents').value = '';
+
+
+
 	//clear password fields
 	document.getElementById("password1").value = "";
 	document.getElementById("password2").value = "";
 
 
+
+	
+
 	//enable/disable proper fields
 	updateVisibility();
 
-}
-
-
-function resetAuthorizedKeysTable()
-{
-  keysTableData = new Array();
-	for (var key in authorizedKeyMap) {
-	    if (authorizedKeyMap.hasOwnProperty(key)) {
-	        keysTableData.push([key])
-	    }
-	}
-
-	keysTable=createTable([], keysTableData, "authorized_keys_table", true, false, removeKey );
-	tableContainer = document.getElementById('authorized_keys_table_container');
-	if(tableContainer.firstChild != null)
-	{
-		tableContainer.removeChild(tableContainer.firstChild);
-	}
-	tableContainer.appendChild(keysTable);
 }
 
 
@@ -542,39 +552,88 @@ function getRemoteOptionValueHash()
 }
 
 
+
+function resetAuthorizedKeysTable()
+{
+	keysTableData = new Array();
+	for (var keyName in authorizedKeyMap)
+	{
+		if (authorizedKeyMap.hasOwnProperty(keyName))
+		{
+			var keyLine = authorizedKeyMap[keyName]
+			var splitKey = keyLine.split(/[\t ]+/);
+			var keyAbbrev = ""
+			var keyName = ""
+			if(splitKey.length > 1)
+			{
+				var keyData = splitKey[1]
+				keyAbbrev = keyData.substr(0,5) + "... " + keyData.substr( keyData.length-6 ,5)
+			}
+			if(splitKey.length > 2)
+			{
+				keyName = splitKey[2]
+			}
+			keysTableData.push([keyAbbrev,keyName])
+		}
+	}
+
+	keysTable=createTable(['',''], keysTableData, "authorized_keys_table", true, false, removeKey );
+	tableContainer = document.getElementById('authorized_keys_table_container');
+	if(tableContainer.firstChild != null)
+	{
+		tableContainer.removeChild(tableContainer.firstChild);
+	}
+	tableContainer.appendChild(keysTable);
+}
+
+
+
 function removeKey(table, row)
 {
-		var key = row.childNodes[0].firstChild.data;
-		delete authorizedKeyMap[key];
-		resetAuthorizedKeysTable();
+	var key = row.childNodes[1].firstChild.data;
+	delete authorizedKeyMap[key];
+	resetAuthorizedKeysTable();
 }
 
 
 function addKey()
 {
 	var file_contents = document.getElementById('file_contents').value;
-	var key = file_contents.match(/[\S]*[\s]*[^=]+==[\s]+.*/)[0];
-	if(key.length == 0)
+	var splitKey = file_contents.split(/[\t ]+/);
+	var keyName = document.getElementById('public_key_name').value
+	if(keyName.length == 0 && splitKey.length > 2)
+	{
+		keyName = splitKey[2];
+	}
+	keyName = keyName.replace(/^[\r\n\t ]+/g, "");
+	keyName = keyName.replace(/[\r\n\t ]+$/g, "");
+	keyName = keyName.replace(/[\r\n\t ]+/g, "_")
+	if(splitKey.length < 2 || keyName.length == 0)
 	{
 		alert(accessStr.SSHInvalidKey);
 	}
 	else
 	{
-		var key_name = key.split("== ")[1];
-		authorizedKeyMap[key_name]=key;
+		var key = splitKey[0] + " " + splitKey[1] + " " + keyName
+		authorizedKeyMap[keyName]=key;
 		resetAuthorizedKeysTable()
+		document.getElementById('public_key_file').value = '';
+		document.getElementById('public_key_name').value = '';
+		document.getElementById('file_contents').value = '';
+
 	}
+	
 }
 
 
-function readKeyFile(e) {
-  var file = e.target.files[0];
-  if (!file) {
-    return;
-  }
-  var reader = new FileReader();
-  reader.onload = function(e) {
-		document.getElementById('file_contents').value = e.target.result;
-  };
-  reader.readAsText(file);
+function readKeyFile(e)
+{
+	var file = e.target.files[0];
+	if (!file)
+	{
+		return;
+	}
+	var reader = new FileReader();
+	reader.onload = function(e){ document.getElementById('file_contents').value = e.target.result; };
+	reader.readAsText(file);
 }

@@ -28,8 +28,8 @@
 		fi
 
 		echo "var authorizedKeyMap = new Object();"
-		if [ -e /etc/hosts ] ; then
-			cat /etc/dropbear/authorized_keys | awk -F'== ' ' {print "authorizedKeyMap[\""$2"\"]=\""$0"\";"}'
+		if [ -e /etc/dropbear/authorized_keys ] ; then
+			cat /etc/dropbear/authorized_keys | awk -F' ' ' $0 ~ /./ {print "authorizedKeyMap[\""$NF"\"]=\""$0"\";"}'
 		fi
 %>
 //-->
@@ -99,47 +99,6 @@
 	<fieldset>
 		<legend class='sectionheader'><%~ SSHAccess %></legend>
 
-		<div class='bottom_gap' id='pwd_enabled_container'>
-			<input type='checkbox' id='pwd_auth_enabled' />
-			<label id='pwd_auth_label' for='pwd_auth_enabled'><%~ SSHEnablePwd %></label>
-		</div>
-
-		<div style='display: block;' id='internal_divider1' class='internal_divider'></div>
-
-		<div class='nocolumn' id='authorized_keys_container'>
-			<form id='authorize_ssh_key_form' enctype='multipart/form-data' method='post' action='utility/authorize_ssh_key.sh'  target="authorize_ssh_key">
-				<label class='leftcolumn' id='add_key_label' for='add_key'><%~ SSHExistKey %>:</label>
-				<div class='rightcolumn'>
-					<input type='file' id='public_key_file' name='public_key_file' />
-					<input type='button' class='default_button' id='add_key' name='add_key' value='<%~ Add %>' onclick='addKey()'/>
-					<input id='file_contents' name='file_contents' type='hidden' value='' />
-					<input id='authorize_hash' name='hash' type='hidden' value='' />
-				</div>
-			</form>
-			<label id='authorized_keys_label' class='leftcolumn' for='authorized_keys_table_container'><%~ SSHKeys %>:</label>
-			<div id='authorized_keys_table_container' class='rightcolumn'></div>
-			<label class='indent'>(<%~ Recmd %>)</label>
-			<iframe id='authorize_ssh_key' name='authorize_ssh_key' src='#' style='display:none'></iframe>
-			<div class='bottom_gap'></div>
-
-			<div id="ssh_help" class="indent">
-				<span id='ssh_help_txt' style='display:none'>
-					<p><%~ SSHHelp1 %></p>
-					<p><%~ SSHHelp2 %></p>
-					<p><%~ SSHHelp3 %></p>
-					<ul>
-						<li><%~ SSHHelp3a %></li>
-						<li><%~ SSHHelp3b %></li>
-					</ul>
-					<p><%~ SSHHelp4 %></p>
-				</span>
-				<a onclick='setDescriptionVisibility("ssh_help")'  id="ssh_help_ref" href="#ssh_help"><%~ MoreInfo %></a>
-			</div>
-
-		</div>
-
-		<div style='display: block;' id='internal_divider2' class='internal_divider'></div>
-
 		<div class='nocolumn' id='local_ssh_port_container'>
 			<label class='leftcolumn' for='local_ssh_port' id='local_ssh_port_label'><%~ LocalSSHPort %>:</label>
 			<input type='text' class='rightcolumn' id='local_ssh_port'  size='7' maxlength='5' onkeyup='proofreadNumericRange(this,1,65535)'/>
@@ -164,6 +123,56 @@
 				<option value="unlimited"><%~ Unlimited %></option>
 			</select>
 		</div>
+
+
+		<div style='display: block;' id='internal_divider1' class='internal_divider'></div>
+		<div class='bottom_gap' id='pwd_enabled_container'>
+			<input type='checkbox' id='pwd_auth_enabled' />
+			<label id='pwd_auth_label' for='pwd_auth_enabled'><%~ SSHEnablePwd %></label>
+		</div>
+
+		<div style='display: block;' id='internal_divider2' class='internal_divider'></div>
+
+		<div style="padding:0px;margin:0px;" id='authorized_keys_container'>
+			
+			<label class='leftcolumn' id='add_key_label' for='add_key'><%~ SSHExistKey %>:</label>
+			<div class='rightcolumn'>
+				<input type='file' id='public_key_file' name='public_key_file' />
+				<input id='file_contents' name='file_contents' type='hidden' value='' />
+			</div>
+		
+			<label class='leftcolumn'><%~ SSHName %>:</label>
+			<div class='rightcolumn'>
+				<input type='text' id='public_key_name' name='public_key_name' value='' />
+				
+			</div>
+			<div class='rightcolumnonly'>
+				<input type='button' class='default_button' id='add_key' name='add_key' value='<%~ Add %>' onclick='addKey()'/>
+		
+			</div>
+
+			<label id='authorized_keys_label' class='leftcolumnonly' for='authorized_keys_table_container'><%~ SSHKeys %>:</label>
+			<div id='authorized_keys_table_container' class='indent'></div>
+			<div class='bottom_gap'></div>
+
+			<div id="ssh_help" class="indent">
+				<span id='ssh_help_txt' style='display:none'>
+					<p><%~ SSHHelp1 %></p>
+					<p><%~ SSHHelp2 %></p>
+					<p><%~ SSHHelp3 %></p>
+					<ul>
+						<li><%~ SSHHelp3a %></li>
+						<li><%~ SSHHelp3b %></li>
+					</ul>
+					<p><%~ SSHHelp4 %></p>
+				</span>
+				<a onclick='setDescriptionVisibility("ssh_help")'  id="ssh_help_ref" href="#ssh_help"><%~ MoreInfo %></a>
+			</div>
+
+		</div>
+
+
+
 	</fieldset>
 
 	<fieldset>
