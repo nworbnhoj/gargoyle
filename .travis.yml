@@ -1,0 +1,18 @@
+language: c
+compiler: gcc
+#before_install:
+#  - sudo apt-get -qq update
+#  - sudo apt-get install -y git-core build-essential libssl-dev libncurses5-dev unzip gawk
+script: travis_wait ./build-gargoyle.sh openwrt ar71xx.default
+cache:
+  directories:
+  - *-src
+  - downloaded
+deploy:
+  provider: releases
+  api_key:
+    secure: MB9ltEI8iKpj7ANKU50TJTnY8qfV8XXyzgRLDpvigGaVIOEn9xb5Os1iXPS56wjykcdL0lMtn8/hnoPKTQx5lLeS3G/otFDtHpY/SxV0Hck2RiuAd+mpVHAXzL41i/LXYTUroHRH0B11GzHnNnljlbmxAHY/HV7QE6Bqelytn1em/Dpagj1vLgS/qokX/PRfQGXL8SVK9eCxW1aE8VlN73VR6Wf/qxqlMAHNnLmL0pD6JvYP/eLXHO3/m0i3ok1Ep9BArMfBN4maUM3jo3S+annBBOQAIDC7GLRYx1quZlz/BVWOjAtk+voHEjnTI65q0D0TCtuCCZ3WvykfE3b6S+7H+od9Gsl3GCKgef5nXZxEa0rpc57Z7L2m1qujc8DM3EEkC6+jN6Dk69xUIjsuGdzpJcz9WHF0dGtwRZhTZBDjAu4DKQxM6ygnzxthAWhZTgI/Xl0/MzM4k7iAM8sItCr5qjBFTGCGU+kFzvNoyRde44SJUmAnSi2yUQ0OOJg4DzMxSp0+qfDYlwl+t5gk8UOGpFxloZrLJZjdj4zo1vgOBm9iDqUh2BtQkuZprORsfR/6y6jizYiAYgK/rIdJsj52ZPxrmHUKjh6GOfYCCCCaWdPmwsdT18VaeiBCinX1KjYtU9lsBKCJMWYfDh4QqsryFIsgdr3MT0xmUWksqYs=
+  file: "/images"
+  skip_cleanup: true
+  on:
+    repo: nworbnhoj/gargoyle
