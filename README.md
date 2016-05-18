@@ -1,31 +1,15 @@
 # gargoyle
-Known Devices
+## Bleeding Edge
 
-The idea is to be able to set policy (Quota, QoS, Restrictions etc) over a
-Group of Known Devices (owned by an individual for example). To achieve this,
-the Known Devices need to be identified by their MAC address' and then arranged
-into Groups. Both Devices and Groups can be named by the Gargoyle Administrator.
+The Bleeding Edge includes Gargoyle developments that have not yet been reviewed or merged into Gargoyle. 
 
-Up until now, the best way for a Gargoyle admin to apply policy to users with
-a number of devices has been to assign a static IP address to each device such
-that each users' devices are in an IP range. Then, the policy is applied to the
-IP range, and the IP range is displayed throughout the Gargoyle GUI. Known Devices
-and Groups enable the Gargoyle admin to work with meaningful names rather than IP
-ranges, and relieves the need to assign static IP addresses.
+[Images](https://github.com/nworbnhoj/gargoyle/tree/bleeding-edge/images/ar71xx)* are available based on automated builds. Please do not flash these images to your router unless you have bricked a router or two and are familiar with the [Gargoyle](https://www.gargoyle-router.com/wiki/doku.php?id=failsafe_mode_recovery)/[OpenWrt](http://wiki.openwrt.org/doc/howto/generic.failsafe) recovery process. Not suitable for 4M routers. I have no idea what "preserve settings" or "restore backup" might do - best not. **Consider yourself duly warned**.
 
-Status
-- Gargoyle-Connection-Devices has a Section for Known Devices and another for Device Groups.
-- Device Groups may be used:
- - Gargoyle-Firewall-Quotas-BandwidthQuotas-AppliesTo
- - Gargoyle-Firewall-Restrictions-AccessRestrictions-RuleAppliesTo
- - Gargoyle-Firewall-Restrictions-Exceptions(Whitelist)-RuleAppliesTo
- - Gargoyle-Forewall-QoS(Upload)-ClassificationRules
- - Gargoyle-Forewall-QoS(Download)-ClassificationRules
+That said, I run this bleeding-edge build on my personal home router (TL-WDR3600) and all of the code included in the bleeding-edge has an open Pull Request on the Gargoyle master awaiting review.
 
-Technical
-- Approx 17k in size
-- Known Devices are stored as a host in uci /etc/config/dhcp
-- Each host has a supplementary Group section
-- Each Device Group is represented by an ipset (each set = 550 bytes min)
-- IP addresses in each ipset are dynamically adjusted when dnsmasq issues a dhcp lease
-- Existing iptables quota rules can check against the membership of an ipset
+Currently the additional functionality included in the bleeding-edge is:
+- **Known Groups** The idea is to be able to set policy (Quota, QoS, Restrictions etc) over a Group of Known Devices (owned by an individual for example). To achieve this, the Known Devices need to be identified by their MAC address' and then arranged into Groups. Both Devices and Groups can be named by the Gargoyle Administrator [more...](https://github.com/nworbnhoj/gargoyle/tree/known-devices#gargoyle)
+
+Please provide your feedback in the [Gargoyle forum](https://www.gargoyle-router.com/phpbb/viewtopic.php?f=7&t=8318#p35607)
+
+\* Click on the gargoyle [bleeding-edge image](https://github.com/nworbnhoj/gargoyle/tree/bleeding-edge/images/ar71xx) you want, click "raw", then "save file"

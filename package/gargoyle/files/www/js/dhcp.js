@@ -778,6 +778,7 @@ function proofreadDhcpForm()
 	return errors;
 }
 
+
 function editStatic()
 {
 	if( typeof(editStaticWindow) != "undefined" )

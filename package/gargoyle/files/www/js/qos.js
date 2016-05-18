@@ -365,10 +365,10 @@ function update_classtable()
 			dynamic_update = false;
 		}
 	}
-	var rowIndex;
-	for (rowIndex=1; rowIndex <= classTable.length; rowIndex++)
-	{
-		var row = table.rows[rowIndex];
+		var rowIndex;
+		for (rowIndex=1; rowIndex <= classTable.length; rowIndex++)
+		{
+			var row = table.rows[rowIndex];
 
 		//Search for the matching class
 		for (classIndex=0; classIndex < classTable.length; classIndex++)

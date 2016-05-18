@@ -1192,6 +1192,7 @@ function editQuota()
 
 	var editRow=this.parentNode.parentNode;
 	var editId = editRow.childNodes[rowCheckIndex].firstChild.id;
+
 	var editIp;
 
 	var editSection = "";
@@ -1253,6 +1254,10 @@ function editQuota()
 								changedIds[newId] = 1;
 							}
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 53df8305b23cedba51b34a0a3a5dadba5c77f2e0
 							setElementAtColumn(hostsToTableSpan(newIp), 0);
 							editRow.childNodes[rowCheckIndex].firstChild.id = newId;
 						}

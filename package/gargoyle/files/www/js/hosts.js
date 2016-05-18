@@ -212,9 +212,9 @@ function parseWifi(arpHash, wirelessDriver, lines)
 
 		//bcm=1, madwifi=2, mac80211=3
 		var macBitSig =	[
-				[whost[1], "0", "0"],
-		    [whost[0], whost[3], whost[5]],
-				[whost[0], whost[2], whost[1], whost[3], whost[4]]
+						[whost[1], "0", "0"],
+				    [whost[0], whost[3], whost[5]],
+						[whost[0], whost[2], whost[1], whost[3], whost[4]]
 				];
 		var mbs = wirelessDriver == "broadcom" ? macBitSig[0] : ( wirelessDriver == "atheros" ? macBitSig[1] : macBitSig[2] );
 		mbs[0] = (mbs[0]).toUpperCase();
